@@ -6,22 +6,15 @@ var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// import the Person class from Person.js
+// import the classes
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 
 /***************************************/
 
-// endpoint for creating a new course
-app.use('/create', (req, res) => {
-
-    }
-    );
-
-// endpoint for showing all the people
+// endpoint for showing all the courses
 app.use('/all', (req, res) => {
-    
-	// find all the Person objects in the database
+
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -46,7 +39,7 @@ app.use('/all', (req, res) => {
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/delete?name=" + course.name + "\">[Delete]</a>");
 			    res.write('</li>');
-					 
+
 			});
 			res.write('</ul>');
 			res.end();
