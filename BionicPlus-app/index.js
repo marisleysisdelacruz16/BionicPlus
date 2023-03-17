@@ -1,51 +1,90 @@
 // set up Express
 var express = require('express');
 var app = express();
-
 // set up BodyParser
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // import the classes
-var Course = require('./Courses.js');
-var Class = require('./Classes.js');
+//var Course = require('./Courses.js');
+//var Class = require('./Classes.js');
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var courseSchema = new Schema({
+	name: {type: String, required: true, unique: true},
+	department: String,
+	level: String,
+	description: String
+    });
+
 
 /***************************************/
+app.use('/create', async (req, res) => {
+    try {
+        mongoose.connect('mongodb://localhost:27017').then(() => {
+            console.log("Connected");
+            const Course = mongoose.model('Courses', courseSchema);
+	// construct the Person from the form data which is in the request body
+            const newCourse = new Course ({
+                name: req.body.name,
+                department: req.body.department,
+                level: "",
+                description: ""
+                });
 
+        // save the person to the database
+            const found = newCourse.save({});
+            res.send(found);
+        })
+        }
+        catch(err){
+            console.log(err);
+        }
+        }
+    );
+
+
+app.use('/test', async (req, res) => {
+   try {
+        await mongoose.connect('mongodb://localhost:27017').then(() => {
+            console.log("Connected");
+            const Course = mongoose.model('Courses', courseSchema);
+            const courses = Course.find({ });
+            console.log(courses.length)
+            res.send(courses.length)
+            }).catch((err) => {
+                console.log("Not Connected: ", err);
+            });
+        //res.send("success")
+    } catch (err) {
+        console.log(err);
+    }
+});
 // endpoint for showing all the courses
-app.use('/all', (req, res) => {
+app.use('/all', async (req, res) => {
+   /* async function run() {
+      await mongoose.connect('mongodb://127.0.0.1:27017');
+      mongoose.model('Course', courseSchema);
 
-	Course.find( {}, (err, courses) => {
-		if (err) {
-		    res.type('html').status(200);
-		    console.log('uh oh' + err);
-		    res.write(err);
-		}
-		else {
-		    if (courses.length == 0) {
-			res.type('html').status(200);
-			res.write('There are no courses');
-			res.end();
-			return;
-		    }
-		    else {
-			res.type('html').status(200);
-			res.write('Here are the courses in the database:');
-			res.write('<ul>');
-			// show all the people
-			courses.forEach( (course) => {
-			    res.write('<li>');
-			    res.write('Name: ' + course.name + '; description: ' + course.description);
-			    // this creates a link to the /delete endpoint
-			    res.write(" <a href=\"/delete?name=" + course.name + "\">[Delete]</a>");
-			    res.write('</li>');
-
-			});
-			res.write('</ul>');
-			res.end();
-		    }
-		}
-	    }).sort({ 'name': 'asc' }); // this sorts them BEFORE rendering the results
+      await mongoose.model('Course').find(); // Works!
+    }*/
+   try {
+        await mongoose.connect('mongodb://localhost:27017').then(() => {
+            console.log("Connected");
+            }).catch((err) => {
+                console.log("Not Connected: ", err);
+            });
+        const Course = mongoose.model('courses', courseSchema, 'courses');
+        const courses = await Course.find({ });
+        if (courses.length == 0){
+            res.send("no courses");
+        }
+        res.send(courses);
+        console.log(courses);
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 
@@ -105,5 +144,6 @@ app.use('/public', express.static('public'));
 app.use('/', (req, res) => { res.redirect('/public/personform.html'); } );
 
 app.listen(3000,  () => {
+
 	console.log('Listening on port 3000');
     });
