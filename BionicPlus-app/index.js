@@ -6,45 +6,47 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // import the classes
-//var Course = require('./Courses.js');
-//var Class = require('./Classes.js');
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var Course = require('./Courses.js');
+var Class = require('./Classes.js');
+//var mongoose = require('mongoose');
+//var Schema = mongoose.Schema;
 
-var courseSchema = new Schema({
-	name: {type: String, required: true, unique: true},
-	department: String,
-	level: String,
-	description: String
-    });
+//var courseSchema = new Schema({
+//	name: {type: String, required: true, unique: true},
+//	department: String,
+//	level: String,
+//	description: String
+ //   });
 
 
 /***************************************/
-app.use('/create', async (req, res) => {
-    try {
-        mongoose.connect('mongodb://localhost:27017').then(() => {
-            console.log("Connected");
-            const Course = mongoose.model('Courses', courseSchema);
-	// construct the Person from the form data which is in the request body
-            const newCourse = new Course ({
-                name: req.body.name,
-                department: req.body.department,
-                level: "",
-                description: ""
-                });
 
-        // save the person to the database
-            const found = newCourse.save({});
-            res.send(found);
-        })
-        }
-        catch(err){
-            console.log(err);
-        }
-        }
+app.use('/createCourse', (req, res) => {
+	// construct the Person from the form data which is in the request body
+	var newCourse = new Course ({
+		name: req.body.name,
+		department: req.body.department,
+		level: req.body.department,
+		description: req.body.description
+	    });
+
+	// save the person to the database
+	newCourse.save( (err) => {
+		if (err) {
+		    res.type('html').status(200);
+		    res.write('uh oh: ' + err);
+		    console.log(err);
+		    res.end();
+		}
+		else {
+		    // display the "successfull created" message
+		    res.send('successfully added ' + newCourse.name + ' to the database');
+		}
+	    } );
+    }
     );
 
-
+/*
 app.use('/test', async (req, res) => {
    try {
         await mongoose.connect('mongodb://localhost:27017').then(() => {
@@ -60,79 +62,121 @@ app.use('/test', async (req, res) => {
     } catch (err) {
         console.log(err);
     }
-});
+}); */
 // endpoint for showing all the courses
-app.use('/all', async (req, res) => {
-   /* async function run() {
-      await mongoose.connect('mongodb://127.0.0.1:27017');
-      mongoose.model('Course', courseSchema);
+app.use('/allCourses', (req, res) => {
 
-      await mongoose.model('Course').find(); // Works!
-    }*/
-   try {
-        await mongoose.connect('mongodb://localhost:27017').then(() => {
-            console.log("Connected");
-            }).catch((err) => {
-                console.log("Not Connected: ", err);
-            });
-        const Course = mongoose.model('courses', courseSchema, 'courses');
-        const courses = await Course.find({ });
-        if (courses.length == 0){
-            res.send("no courses");
-        }
-        res.send(courses);
-        console.log(courses);
-    } catch (err) {
-        console.log(err);
-    }
+	// find all the Person objects in the database
+	Course.find( {}, (err, courses) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (courses.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no courses to display');
+			res.end();
+			return;
+		    }
+		    else {
+			res.type('html').status(200);
+			res.write('Here are the courses in the database:');
+			res.write('<ul>');
+			// show all the people
+			courses.forEach( (course) => {
+			    res.write('<li>');
+			    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; description: ' + course.description);
+			    // this creates a link to the /delete endpoint
+			    res.write(" <a href=\"/deleteCourse?name=" + course.name + "\">[Delete]</a>");
+			    res.write('</li>');
+
+			});
+			res.write('</ul>');
+			res.end();
+		    }
+		}
+	    }).sort({ 'department': 'asc' }); // this sorts them BEFORE rendering the results
+});
+//endpoint for all classes
+app.use('/allClasses', (req, res) => {
+
+	// find all the Person objects in the database
+	Class.find( {}, (err, classes) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (classes.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no classes to display');
+			res.end();
+			return;
+		    }
+		    else {
+			res.type('html').status(200);
+			res.write('Here are the classes in the database:');
+			res.write('<ul>');
+			// show all the classes
+			classes.forEach(  (c) => {
+			    res.write('<li>');
+			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
+			    // this creates a link to the /delete endpoint
+			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+			    res.write('</li>');
+
+			});
+			res.write('</ul>');
+			res.end();
+		    }
+		}
+	    }).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 });
 
 
-// IMPLEMENT THIS ENDPOINT!
-app.use('/delete', (req, res) => {
+app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
+    var filter = {'name': req.query.name};
+    var newDescription = req.query.description;
+    var action = {'$set': {description: newDescription}}
+    Course.findOneAndUpdate( filter, action, (err,course) => {
+        if (err) {
+            console.log(err);
+        }
+        else if (!course){
+            console.log("Course not found");
+        }
+        else{
+            console.log("success")
+        }
+    });
+    res.redirect('/all');
+});
+
+app.use('/updateClass', (req, res) => {
+    var newDays = req.query.days;
+    var newProf = req.query.prof;
+    var newRating = req.query.rating;
+    var newTime = req.query.time;
+    var filter = {'CourseNumber': req.query.courseNumber};
+    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, time: newTime}}
+    Class.findOneAndUpdate( filter, action, (err,c) => {
+        if (err) {
+            console.log(err);
+        }
+        else if (!course){
+            console.log("Class not found");
+        }
+        else{
+            console.log("success")
+        }
+    });
     res.redirect('/all');
 });
 
 
-
-// endpoint for accessing data via the web api
-// to use this, make a request for /api to get an array of all Person objects
-// or /api?name=[whatever] to get a single object
-app.use('/api', (req, res) => {
-	// construct the query object
-	var queryObject = {};
-	if (req.query.name) {
-	    // if there's a name in the query parameter, use it here
-	    queryObject = { "name" : req.query.name };
-	}
-    
-	Course.find( queryObject, (err, courses) => {
-		console.log(courses);
-		if (err) {
-		    console.log('uh oh' + err);
-		    res.json({});
-		}
-		else if (courses.length == 0) {
-		    // no objects found, so send back empty json
-		    res.json({});
-		}
-		else if (courses.length == 1 ) {
-		    var course = courses[0];
-		    // send back a single JSON object
-		    res.json( { "name" : course.name , "age" : course.age } );
-		}
-		else {
-		    // construct an array out of the result
-		    var returnArray = [];
-		    courses.forEach( (course) => {
-			    returnArray.push( { "name" : course.name, "description" : course.description } );
-			});
-		    // send it back as JSON Array
-		    res.json(returnArray); 
-		}
-		
-	    });
-    });
 
 
 
@@ -141,7 +185,7 @@ app.use('/api', (req, res) => {
 
 app.use('/public', express.static('public'));
 
-app.use('/', (req, res) => { res.redirect('/public/personform.html'); } );
+app.use('/', (req, res) => { res.redirect('/public/courseform.html'); } );
 
 app.listen(3000,  () => {
 
