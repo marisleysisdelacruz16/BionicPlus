@@ -36,7 +36,8 @@ app.use('/createCourse', (req, res) => {
 		description: req.body.description,
 		domain: req.body.domain,
 		majorRequirement: req.body.majorRequirement,
-		//ID: new mongo.ObjectID(),
+		//Id currently set to 0000 for everything for testing; figuring out how to make objectID() work at the moment.
+		ID: "0000",
 		classList : []
 	    });
 
@@ -165,6 +166,7 @@ app.use('/allClasses', (req, res) => {
 
 //endpoint for all courses and all classes
 app.use('/showAll', (req, res) => {
+//Finds all the courses, does error handling
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -184,32 +186,32 @@ app.use('/showAll', (req, res) => {
 			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
 			    res.write('</li>');
 			res.write('<ul>');
-			// show all courses
+			// Writes out all courses in the database
 				courses.forEach( (course) => {
 				    res.write('<li>');
 				    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; Domain: ' + course.domain);
 				    res.write('; Required for major? ' + course.majorRequirement + '; description: ' + course.description);
-				// this creates a link to the /updateCourseView endpoint
+				// this creates a link to the /updateCourseView endpoint, which brings the user to the related html page
 				    res.write(" <a href=\"/updateCourseView?name=" + course.name + "\">[EditCourse]</a>");
 				    res.write('</li>');
-				    // this creates a link to the /deleteCourse endpoint
+				    // this creates a link to the /deleteCourse endpoint, to be implemented
 				    res.write(" <a href=\"/deleteCourse?name=" + course.name + "\">[Delete Course]</a>");
 				    res.write('</li>');
-				// this creates a link to the /createClass endpoint
+				// this creates a link to the /addClassView endpoint, which brings the user to the related html page
 				res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
 				    res.write('</li>');
 				res.write('</ul>');
 				if (course.classList.length == 0){
 					res.write('There are no classes to display');
 				}
-					else{
+					else{ //Writes all the classes
 						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
 						classes.forEach(  (c) => {
 						    res.write('<li>');
-						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
-						    // this creates a link to the /delete endpoint
+						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
 						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			 			   res.write('</li>');
 						});
@@ -227,8 +229,8 @@ app.use('/showAll', (req, res) => {
 
 app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
     var filter = {'name': req.query.name};
-	console.log(filter);
-    var newDescription = req.query.description;
+//Set to req.body.description instead of req.query.description since we'll be doing this through an html form.
+    var newDescription = req.body.description;
     var action = {'$set': {description: newDescription}}
     Course.findOneAndUpdate( filter, action, (err,course) => {
         if (err) {
