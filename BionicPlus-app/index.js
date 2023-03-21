@@ -8,29 +8,39 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // import the classes
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
+var mongo = require('mongodb');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-//var courseSchema = new Schema({
-//	name: {type: String, required: true, unique: true},
-//	department: String,
-//	level: String,
-//	description: String
- //   });
+/* var courseSchema = new Schema({
+	name: {type: String, required: true, unique: true},
+	department: String,
+	level: String,
+	domain: String,
+	majorRequirement: Boolean,
+	description: String,
+	classList: Array,
+	ID: String
+});
+ */
 
 
 /***************************************/
 
 app.use('/createCourse', (req, res) => {
-	// construct the Person from the form data which is in the request body
+	// construct the Course from the form data which is in the request body
 	var newCourse = new Course ({
 		name: req.body.name,
 		department: req.body.department,
-		level: req.body.department,
-		description: req.body.description
+		level: req.body.level,
+		description: req.body.description,
+		domain: req.body.domain,
+		majorRequirement: req.body.majorRequirement,
+		//ID: new mongo.ObjectID(),
+		classList : []
 	    });
 
-	// save the person to the database
+	// save the course to the database
 	newCourse.save( (err) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -87,12 +97,27 @@ app.use('/allCourses', (req, res) => {
 			// show all the people
 			courses.forEach( (course) => {
 			    res.write('<li>');
-			    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; description: ' + course.description);
-			    // this creates a link to the /delete endpoint
-			    res.write(" <a href=\"/deleteCourse?name=" + course.name + "\">[Delete]</a>");
-			    res.write('</li>');
+			    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; domain: ' + course.domain)
+			if (course.majorRequirement){
 
-			});
+			res.write('Required for Major');
+
+			}
+			else{
+			res.write('Elective');
+			}
+			res.write('Description: ' + course.description);
+
+			// this creates a link to the /updateCourseView endpoint
+			    res.write(" <a href=\"/updateCourseView?name=" + course.name + "\">[EditCourse]</a>");
+			    res.write('</li>');
+			    // this creates a link to the /deleteCourse endpoint
+			    res.write(" <a href=\"/deleteCourse?name=" + course.name + "\">[Delete Course]</a>");
+			    res.write('</li>');
+			// this creates a link to the /createClass endpoint
+			    res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
+			    res.write('</li>');
+			});f
 			res.write('</ul>');
 			res.end();
 		    }
@@ -119,6 +144,8 @@ app.use('/allClasses', (req, res) => {
 		    else {
 			res.type('html').status(200);
 			res.write('Here are the classes in the database:');
+			 
+
 			res.write('<ul>');
 			// show all the classes
 			classes.forEach(  (c) => {
@@ -136,9 +163,71 @@ app.use('/allClasses', (req, res) => {
 	    }).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 });
 
+//endpoint for all courses and all classes
+app.use('/showAll', (req, res) => {
+	Course.find( {}, (err, courses) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (courses.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no courses to display');
+			res.end();
+			return;
+		    }
+		    else {
+			res.type('html').status(200);
+			res.write('Here are the courses in the database:');
+			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
+			    res.write('</li>');
+			res.write('<ul>');
+			// show all courses
+				courses.forEach( (course) => {
+				    res.write('<li>');
+				    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; Domain: ' + course.domain);
+				    res.write('; Required for major? ' + course.majorRequirement + '; description: ' + course.description);
+				// this creates a link to the /updateCourseView endpoint
+				    res.write(" <a href=\"/updateCourseView?name=" + course.name + "\">[EditCourse]</a>");
+				    res.write('</li>');
+				    // this creates a link to the /deleteCourse endpoint
+				    res.write(" <a href=\"/deleteCourse?name=" + course.name + "\">[Delete Course]</a>");
+				    res.write('</li>');
+				// this creates a link to the /createClass endpoint
+				res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
+				    res.write('</li>');
+				res.write('</ul>');
+				if (course.classList.length == 0){
+					res.write('There are no classes to display');
+				}
+					else{
+						res.write('Here are the classes in the course:');
+						res.write('<ul>');
+						// show all the classes
+						classes.forEach(  (c) => {
+						    res.write('<li>');
+						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
+						    // this creates a link to the /delete endpoint
+						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+			 			   res.write('</li>');
+						});
+
+
+					}
+
+				});	
+			res.write('</ul>');
+			res.end();
+			}
+		}
+	});
+});
 
 app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
     var filter = {'name': req.query.name};
+	console.log(filter);
     var newDescription = req.query.description;
     var action = {'$set': {description: newDescription}}
     Course.findOneAndUpdate( filter, action, (err,course) => {
@@ -153,6 +242,16 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
         }
     });
     res.redirect('/all');
+});
+
+app.use('/updateCourseView',(req,res)=>{
+	res.redirect('/public/updatecourseform.html?name=' + req.query.name);
+//document.getElementById('courseName').innerHTML = req.query.name;
+});
+
+app.use('/addClassView',(req,res)=>{
+console.log("Got to classView");
+	res.redirect('/public/classform.html?name=' + req.query.name);
 });
 
 app.use('/updateClass', (req, res) => {
@@ -185,7 +284,7 @@ app.use('/updateClass', (req, res) => {
 
 app.use('/public', express.static('public'));
 
-app.use('/', (req, res) => { res.redirect('/public/courseform.html'); } );
+app.use('/', (req, res) => { res.redirect('/showAll'); } );
 
 app.listen(3000,  () => {
 
