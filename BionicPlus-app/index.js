@@ -177,7 +177,8 @@ app.use('/updateClass', (req, res) => {
 });
 
 
-
+app.use('/home',(req,res) => {
+	res.redirect('/public/index.html');});
 
 
 
