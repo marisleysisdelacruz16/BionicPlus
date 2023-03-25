@@ -9,6 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 var mongo = require('mongodb');
+const { db } = require('./Classes.js');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
@@ -57,23 +58,22 @@ app.use('/createCourse', (req, res) => {
     }
     );
 
-/*
-app.use('/test', async (req, res) => {
-   try {
-        await mongoose.connect('mongodb://localhost:27017').then(() => {
-            console.log("Connected");
-            const Course = mongoose.model('Courses', courseSchema);
-            const courses = Course.find({ });
-            console.log(courses.length)
-            res.send(courses.length)
-            }).catch((err) => {
-                console.log("Not Connected: ", err);
-            });
-        //res.send("success")
-    } catch (err) {
-        console.log(err);
-    }
-}); */
+// app.use('/test', async (req, res) => {
+//    try {
+//         await mongoose.connect('mongodb://localhost:27017').then(() => {
+//             console.log("Connected");
+//             const Course = mongoose.model('Courses', courseSchema);
+//             const courses = Course.find({ });
+//             console.log(courses.length)
+//             res.send(courses.length)
+//             }).catch((err) => {
+//                 console.log("Not Connected: ", err);
+//             });
+//         res.send("success")
+//     } catch (err) {
+//         console.log(err);
+//     }
+// }); 
 // endpoint for showing all the courses
 app.use('/allCourses', (req, res) => {
 
@@ -95,7 +95,7 @@ app.use('/allCourses', (req, res) => {
 			res.type('html').status(200);
 			res.write('Here are the courses in the database:');
 			res.write('<ul>');
-			// show all the people
+			// show all the courses
 			courses.forEach( (course) => {
 			    res.write('<li>');
 			    res.write('Name: ' + course.name + '; department: ' + course.department + '; level: ' + course.level + '; domain: ' + course.domain)
@@ -118,7 +118,7 @@ app.use('/allCourses', (req, res) => {
 			// this creates a link to the /createClass endpoint
 			    res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
 			    res.write('</li>');
-			});f
+			});
 			res.write('</ul>');
 			res.end();
 		    }
@@ -142,6 +142,7 @@ app.use('/allClasses', (req, res) => {
 			res.end();
 			return;
 		    }
+
 		    else {
 			res.type('html').status(200);
 			res.write('Here are the classes in the database:');
@@ -154,6 +155,9 @@ app.use('/allClasses', (req, res) => {
 			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+			    res.write('</li>');
+				 // creates a link to the /editClass endpoint
+				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
 
 			});
@@ -177,14 +181,16 @@ app.use('/showAll', (req, res) => {
 		    if (courses.length == 0) {
 			res.type('html').status(200);
 			res.write('There are no courses to display');
+			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
+			res.write('</li>'); 
 			res.end();
 			return;
-		    }
-		    else {
+		}
+		   else {
 			res.type('html').status(200);
 			res.write('Here are the courses in the database:');
 			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
-			    res.write('</li>');
+			res.write('</li>');
 			res.write('<ul>');
 			// Writes out all courses in the database
 				courses.forEach( (course) => {
@@ -215,14 +221,13 @@ app.use('/showAll', (req, res) => {
 						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			 			   res.write('</li>');
 						});
-
-
 					}
 
 				});	
 			res.write('</ul>');
 			res.end();
 			}
+		
 		}
 	});
 });
@@ -256,6 +261,10 @@ console.log("Got to classView");
 	res.redirect('/public/classform.html?name=' + req.query.name);
 });
 
+
+/*************************************************/
+								//Class Endpoints // 
+
 app.use('/updateClass', (req, res) => {
     var newDays = req.query.days;
     var newProf = req.query.prof;
@@ -278,7 +287,118 @@ app.use('/updateClass', (req, res) => {
 });
 
 
+//add classes redirected from /allCourses endpoint
+app.use('/createClass', (req, res) => {
+	// construct the Class from the form data which is in the request body
+	var addClass = new Class ({
+		courseNumber: req.body.courseNumber,
+		days: req.body.days,
+		prof: req.body.prof,
+		semester: req.body.semester,
+		time: req.body.time,
+		courseID: req.body.courseID,
+		});
 
+	// save the class to the database
+	addClass.save( (err) => {
+		if (err) {
+			res.type('html').status(200);
+			res.write('uh oh: ' + err);
+			console.log(err);
+			res.end();
+		}
+		else {
+			// display the "successfull created" message
+			res.send('successfully added ' + addClass.courseNumber + ' to the database!');
+		}
+		} );
+	}
+	);
+
+	//delete endpoint redirected from /showAll endpoint 
+	app.use('/deleteClass', (req, res) => {
+		var filter = { 'courseNumber' : req.query.courseNumber } 
+		Class.findOneAndDelete( filter, (err, c) => {
+				if (err) {
+					console.log(err);
+				}
+				else if (!c){
+					console.log("Class can't be deleted because it does not exist");
+				}
+				else{
+					console.log("Successfully deleted!"); 
+				}
+			});
+			res.redirect('/all');
+		});
+
+
+
+app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+
+	var courseOne = req.body.courseID
+	var courseTwo = req.body.courseID
+
+  // Find the Class objects with the given classIds in the database 
+	courseOne = Class.findOne({ courseID: courseOne });
+    courseTwo = Class.findOne({ courseID: courseTwo }).exec();
+
+
+	if (!courseOne || !courseTwo) {
+		res.json( {'status' : err})
+		res.send("One of the classes does not exist!");
+	}
+	else {
+		var classOne = courseOne.classList
+		var classTwo = courseTwo.classList
+	
+		var crosslistedClass = {classId: `${courseOne.classId}-${courseTwo.classId}`};
+		  
+		classOne = {'$addFields' : {"crossListed" : classTwo}}; 
+		classTwo = {'$addFields' : {"classListed" : classOne}}; 
+		
+		classOne.save ( (err => {
+			if(!err) {
+				console.log("Saved request for " + classOne)
+			}
+			else {
+				console.log(err)
+				res.send ("Error! " + err)
+			}
+		}));
+
+		classTwo.save ( (err => {
+			if(!err) {
+				console.log("Saved request for " + classOne)
+			}
+			else {
+				console.log(err)
+				res.send ("Error! " + err)
+			}
+		})); 
+		res.send("Successfully crosslisted classes!");
+	}
+});
+
+	// else {
+	// 	if (req.query.courseID) {
+	// 		var courses = req.query.courseID; //array of course IDs 
+	// 		courses.forEach( (course) => { //iterate over each course and set the other course 
+	// 		 course = {classId: `${courseOne.classId}-${courseTwo.classId}`};
+	// 		 courseOne.classList.$set(courseTwo.classList); 
+	// 		// Save the changes to the database
+	// 		courses.save( (err) => {
+	// 		if (!err) {
+	// 				res.send("Saved request!"); 
+	// 			}
+	// 		else {
+	// 			console.log(err);
+	// 			res.send ("Error! " + err); 
+	// 			}
+	// 		}); 
+	// 	});	
+
+	// }}
 
 
 
