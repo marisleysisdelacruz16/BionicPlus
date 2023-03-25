@@ -1,0 +1,37 @@
+<html>
+<head>
+  <script type="text/javascript">
+	const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const courseName = urlParams.get('name');
+
+window.onload = function(){
+    document.getElementById("form").action = "/createCourse?name="+courseName
+};
+  </script>
+</head>
+
+<html>
+<body>
+<form id="form" method="post">
+
+Making new class in course 
+      <script type="text/javascript">
+        document.write(courseName)
+      </script>
+<p>
+Course Number: <input name="courseNumber">
+<p>
+Days: <input name="days">
+<p>
+Time: <input name="time">
+<p>
+Semester: <input name="semester">
+<p>
+Professor: <input name="prof">
+<p>
+<input type="submit" value="Update Course!">
+</form>
+</body>
+
+</html>

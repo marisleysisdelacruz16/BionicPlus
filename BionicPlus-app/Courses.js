@@ -5,13 +5,18 @@ var mongoose = require('mongoose');
 mongoose.connect('mongodb://127.0.0.1:27017/coursesDatabase');
 
 var Schema = mongoose.Schema;
+var Class = require('./Classes.js');
 
 var courseSchema = new Schema({
 	name: {type: String, required: true, unique: true},
 	department: String,
 	level: String,
-	description: String
-    });
+	domain: String,
+	majorRequirement: Boolean,
+	description: String,
+	classList: Array,
+	ID: String
+});
 
 // export courseSchema as a class called Course
 module.exports = mongoose.model('Course', courseSchema);
@@ -25,12 +30,10 @@ courseSchema.methods.standardizeName = function() {
 var classSchema = new Schema({
 	courseNumber: {type: String, required: true, unique: true},
 	days: Array,
-	domain: String,
-	majorRequirement: Boolean,
 	prof: String,
-	rating: Number,
 	semester: String,
-	time: String
+	time: String,
+	courseID: String
     });
 
 module.exports = mongoose.model('Class', classSchema);

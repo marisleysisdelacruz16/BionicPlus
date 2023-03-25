@@ -1,0 +1,34 @@
+<html>
+<head>
+  <script type="text/javascript">
+	const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const number = urlParams.get('name');
+
+window.onload = function(){
+    document.getElementById("form").action = "/updateCourse?name="+number
+};
+  </script>
+</head>
+
+<html>
+<body>
+<form id="form" method="post">
+
+Updating course:
+      <script type="text/javascript">
+        document.write(number)
+      </script>
+<p>
+Department: <input name="department">
+<p>
+Level: <input name="level">
+<p>
+Description: <input name="description">
+<p>
+<input type="submit" value="Update Course!">
+
+</form>
+</body>
+
+</html>

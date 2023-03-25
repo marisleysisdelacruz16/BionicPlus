@@ -8,13 +8,11 @@ var Schema = mongoose.Schema;
 
 var classSchema = new Schema({
 	courseNumber: {type: String, required: true, unique: true},
-	days: Array,
-	domain: String,
-	majorRequirement: Boolean,
+	days: String,
 	prof: String,
-	rating: Number,
 	semester: String,
-	time: String
+	time: String,
+	courseID: String
     });
 
 module.exports = mongoose.model('Class', classSchema);
