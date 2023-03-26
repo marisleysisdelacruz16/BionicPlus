@@ -157,7 +157,7 @@ app.use('/allClasses', (req, res) => {
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
 				 // creates a link to the /editClass endpoint
-				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Delete]</a>");
+				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Edit]</a>");
 			    res.write('</li>');
 
 			});
@@ -214,13 +214,14 @@ app.use('/showAll', (req, res) => {
 						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
-						classes.forEach(  (c) => {
-						    res.write('<li>');
-						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
-						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
-						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
-			 			   res.write('</li>');
-						});
+						//!!!!!!
+						// classes.forEach(  (c) => {
+						//     res.write('<li>');
+						//     res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+						//     // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
+						//     res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+			 			//    res.write('</li>');
+						// });
 					}
 
 				});	
@@ -287,20 +288,22 @@ app.use('/updateClass', (req, res) => {
 });
 
 
-//add classes redirected from ...
+//add classes directed from classform.html
+
+//works for second course but not for first? 
 app.use('/createClass', (req, res) => {
-	// construct the Class from the form data which is in the request body
-	var addClass = new Class ({
+	//construct the Class from the form data which is in the request body
+	var newClass = new Class ({
 		courseNumber: req.body.courseNumber,
 		days: req.body.days,
 		prof: req.body.prof,
 		semester: req.body.semester,
 		time: req.body.time,
 		courseID: req.body.courseID,
-		});
+	});
 
-	// save the class to the database
-	addClass.save( (err) => {
+	// // save the class to the database
+	newClass.save( (err) => {
 		if (err) {
 			res.type('html').status(200);
 			res.write('uh oh: ' + err);
@@ -308,28 +311,41 @@ app.use('/createClass', (req, res) => {
 			res.end();
 		}
 		else {
-			// display the "successfull created" message
-			res.send('successfully added ' + addClass.courseNumber + ' to the database!');
+			// success message + update course classList to add the new class to db
+			res.send('successfully added  course '  +newClass.courseNumber + ' to the database!');
+			var filter = { 'name' : req.query.name };
+			var action = { '$push' : { 'classList' : newClass}};
+			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
+				if (err) {
+					console.log('error!'); 
+				}
+				else if (!orig) {
+					console.log('no classes!'); 
+				}
+				else {
+					console.log('Updated class to course!'); 
+				}
+			});
 		}
-		} );
-	}
-	);
+		});
+	});
+
 
 	//delete endpoint redirected from /showAll endpoint 
 	app.use('/deleteClass', (req, res) => {
 		var filter = { 'courseNumber' : req.query.courseNumber } 
-		Class.findOneAndDelete( filter, (err, c) => {
+		Class.findOneAndDelete( filter, (err, classes) => {
 				if (err) {
 					console.log(err);
 				}
-				else if (!c){
+				else if (!classes){
 					console.log("Class can't be deleted because it does not exist");
 				}
 				else{
 					console.log("Successfully deleted!"); 
 				}
 			});
-			res.redirect('/all');
+			res.redirect('/allClasses');
 		});
 
 
@@ -337,10 +353,10 @@ app.use('/createClass', (req, res) => {
 app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
 
 	if(!req.query.courseID) {
-		res.write('No classes crosslisted');
+		res.write('No classes to be crosslisted');
 	}
 	else {
-	var { courseId1, courseId2 } = req.query.courseID;
+	var { courseId1, courseId2 } = req.query.courseID; //store queries as array 
 
 	// Find the Class objects with the given courseIds
 	var class1 = Class.findOne({ courseID: courseId1 }).exec();
