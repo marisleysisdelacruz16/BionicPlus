@@ -214,14 +214,13 @@ app.use('/showAll', (req, res) => {
 						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
-						//!!!!!!
-						// classes.forEach(  (c) => {
-						//     res.write('<li>');
-						//     res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
-						//     // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
-						//     res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
-			 			//    res.write('</li>');
-						// });
+						classes.forEach(  (c) => {
+						    res.write('<li>');
+						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
+						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+			 			   res.write('</li>');
+						});
 					}
 
 				});	
