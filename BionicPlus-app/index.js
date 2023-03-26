@@ -287,7 +287,7 @@ app.use('/updateClass', (req, res) => {
 });
 
 
-//add classes redirected from /allCourses endpoint
+//add classes redirected from ...
 app.use('/createClass', (req, res) => {
 	// construct the Class from the form data which is in the request body
 	var addClass = new Class ({
@@ -336,70 +336,30 @@ app.use('/createClass', (req, res) => {
 
 app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
 
-	var courseOne = req.body.courseID
-	var courseTwo = req.body.courseID
-
-  // Find the Class objects with the given classIds in the database 
-	courseOne = Class.findOne({ courseID: courseOne });
-    courseTwo = Class.findOne({ courseID: courseTwo }).exec();
-
-
-	if (!courseOne || !courseTwo) {
-		res.json( {'status' : err})
-		res.send("One of the classes does not exist!");
+	if(!req.query.courseID) {
+		res.write('No classes crosslisted');
 	}
 	else {
-		var classOne = courseOne.classList
-		var classTwo = courseTwo.classList
-	
-		var crosslistedClass = {classId: `${courseOne.classId}-${courseTwo.classId}`};
-		  
-		classOne = {'$addFields' : {"crossListed" : classTwo}}; 
-		classTwo = {'$addFields' : {"classListed" : classOne}}; 
-		
-		classOne.save ( (err => {
-			if(!err) {
-				console.log("Saved request for " + classOne)
-			}
-			else {
-				console.log(err)
-				res.send ("Error! " + err)
-			}
-		}));
+	var { courseId1, courseId2 } = req.query.courseID;
 
-		classTwo.save ( (err => {
-			if(!err) {
-				console.log("Saved request for " + classOne)
-			}
-			else {
-				console.log(err)
-				res.send ("Error! " + err)
-			}
-		})); 
-		res.send("Successfully crosslisted classes!");
+	// Find the Class objects with the given courseIds
+	var class1 = Class.findOne({ courseID: courseId1 }).exec();
+	var class2 = Class.findOne({ courseID: courseId2 }).exec();
+  
+	// If either of the classes does not exist, return an error
+	if (!class1 || !class2) {
+		res.send(err); 
+	    res.write('One or both classes not found');
 	}
-});
-
-	// else {
-	// 	if (req.query.courseID) {
-	// 		var courses = req.query.courseID; //array of course IDs 
-	// 		courses.forEach( (course) => { //iterate over each course and set the other course 
-	// 		 course = {classId: `${courseOne.classId}-${courseTwo.classId}`};
-	// 		 courseOne.classList.$set(courseTwo.classList); 
-	// 		// Save the changes to the database
-	// 		courses.save( (err) => {
-	// 		if (!err) {
-	// 				res.send("Saved request!"); 
-	// 			}
-	// 		else {
-	// 			console.log(err);
-	// 			res.send ("Error! " + err); 
-	// 			}
-	// 		}); 
-	// 	});	
-
-	// }}
-
+  
+	// crosslist the id query fields of the classes
+	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
+  
+	// return crosslisted fields 
+	return res.json(crosslistedClass);
+	}
+  });
+  
 
 
 /*************************************************/
