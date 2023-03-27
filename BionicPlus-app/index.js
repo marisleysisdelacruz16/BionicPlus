@@ -152,7 +152,7 @@ app.use('/allClasses', (req, res) => {
 			// show all the classes
 			classes.forEach(  (c) => {
 			    res.write('<li>');
-			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
+			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Number of Credits: ' + c.numCredits +'; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
@@ -210,7 +210,7 @@ app.use('/showAll', (req, res) => {
 				if (course.classList.length == 0){
 					res.write('There are no classes to display');
 				}
-					else{ //Writes all the classes
+				else{ //Writes all the classes
 						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
@@ -227,26 +227,13 @@ app.use('/showAll', (req, res) => {
 					}
 
 				});
-				else{ //Writes all the classes
-					res.write('Here are the classes in the course:');
-					res.write('<ul>');
-					//!!!!!!
-					// classes.forEach(  (c) => {
-					// res.write('<li>');
-					// res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
-					// // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
-					// res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
-					// res.write('</li>');
-					// });
-				}
-			});
+			}
 			res.write('</ul>');
 			res.end();
 			}
 		
-		}
+		});
 	});
-});
 
 app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
     var filter = {'name': req.query.name};
@@ -289,9 +276,10 @@ app.use('/updateClass', (req, res) => {
     var newDays = req.body.days;
     var newProf = req.body.prof;
     var newRating = req.body.rating;
+    var newCredits = req.body.numCredits;
     var newTime = req.body.time;
     var filter = {'CourseNumber': req.query.courseNumber};
-    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, time: newTime}}
+    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, numCredits:newCredits, time: newTime}}
     Class.findOneAndUpdate( filter, action, (err,c) => {
         if (err) {
             console.log(err);
