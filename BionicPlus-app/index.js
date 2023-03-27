@@ -152,7 +152,7 @@ app.use('/allClasses', (req, res) => {
 			// show all the classes
 			classes.forEach(  (c) => {
 			    res.write('<li>');
-			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Number of Credits: ' + c.numCredits +'; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
+			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Required for Major: ' + c.majorRequirement + '; Number of Credits: ' + c.numCredits +'; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
@@ -291,7 +291,7 @@ app.use('/updateClass', (req, res) => {
             console.log("success")
         }
     });
-    res.redirect('/showAll');
+    res.redirect('/allClasses');
 });
 
 

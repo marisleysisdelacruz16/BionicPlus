@@ -1,12 +1,12 @@
 <html>
 <head>
-  <script type="text/javascript">
+    <script type="text/javascript">
 	const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const courseName = urlParams.get('name');
+    const number = urlParams.get('name');
 
 window.onload = function(){
-    document.getElementById("form").action = "/editClass?name= "+ courseNumber
+    document.getElementById("form").action = "/updateClass?name="+number
 };
   </script>
 </head>
@@ -17,10 +17,8 @@ window.onload = function(){
 
 Edit Mode: 
       <script type="text/javascript">
-        document.write(courseNumber)
+        document.write(number)
       </script>
-<p>
-Course Number: <input name="courseNumber">
 <p>
 Days: <input name="days">
 <p>
