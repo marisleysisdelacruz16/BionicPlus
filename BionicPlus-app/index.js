@@ -259,7 +259,7 @@ app.use('/updateCourseView',(req,res)=>{
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 app.use('/updateClassView',(req,res)=>{
-	res.redirect('/public/updateclassform.html?name=' + req.query.courseNumber);
+	res.redirect('/public/editclass.html?name=' + req.query.courseNumber);
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 

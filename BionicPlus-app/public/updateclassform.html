@@ -3,7 +3,7 @@
     <script type="text/javascript">
 	const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const number = urlParams.get('courseNumber');
+    const number = urlParams.get('name');
 
 window.onload = function(){
     document.getElementById("form").action = "/updateClass?name="+number
@@ -14,7 +14,7 @@ window.onload = function(){
 <body>
 <form id="form" method="post">
 
-    Updating course:
+    Updating class:
     <script type="text/javascript">
         document.write(number)
       </script>
