@@ -10,20 +10,7 @@ var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 var mongo = require('mongodb');
 const { db } = require('./Classes.js');
-//var mongoose = require('mongoose');
-//var Schema = mongoose.Schema;
 
-/* var courseSchema = new Schema({
-	name: {type: String, required: true, unique: true},
-	department: String,
-	level: String,
-	domain: String,
-	majorRequirement: Boolean,
-	description: String,
-	classList: Array,
-	ID: String
-});
- */
 
 
 /***************************************/
@@ -57,6 +44,7 @@ app.use('/createCourse', (req, res) => {
 	    } );
     }
     );
+
 
 // app.use('/test', async (req, res) => {
 //    try {
@@ -152,7 +140,7 @@ app.use('/allClasses', (req, res) => {
 			// show all the classes
 			classes.forEach(  (c) => {
 			    res.write('<li>');
-			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
+			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; domain: ' + c.domain + '; Required for Major: ' + c.majorRequirement + '; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Number of Credits: ' + c.numCredits + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
@@ -214,16 +202,19 @@ app.use('/showAll', (req, res) => {
 						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
-						classes.forEach(  (c) => {
+						course.classList.forEach(  (c) => {
 						    res.write('<li>');
 						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
 						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
 						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			 			   res.write('</li>');
+
+                            res.write(" <a href=\"/updateClassView?name=" + c.CourseNumber + "\">[EditClass]</a>");
+                            res.write('</li>');
 						});
 					}
 
-				});	
+				});
 			res.write('</ul>');
 			res.end();
 			}
@@ -248,11 +239,15 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
             console.log("success")
         }
     });
-    res.redirect('/all');
+    res.redirect('/showAll');
 });
 
 app.use('/updateCourseView',(req,res)=>{
 	res.redirect('/public/updatecourseform.html?name=' + req.query.name);
+//document.getElementById('courseName').innerHTML = req.query.name;
+});
+app.use('/updateClassView',(req,res)=>{
+	res.redirect('/public/updateclassform.html?name=' + req.query.courseNumber);
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 
@@ -266,24 +261,24 @@ console.log("Got to classView");
 								//Class Endpoints // 
 
 app.use('/updateClass', (req, res) => {
-    var newDays = req.query.days;
-    var newProf = req.query.prof;
-    var newRating = req.query.rating;
-    var newTime = req.query.time;
+    var newDays = req.body.days;
+    var newProf = req.body.prof;
+    var newRating = req.body.rating;
+    var newTime = req.body.time;
     var filter = {'CourseNumber': req.query.courseNumber};
     var action = {'$set': {days: newDays, prof: newProf, rating: newRating, time: newTime}}
     Class.findOneAndUpdate( filter, action, (err,c) => {
         if (err) {
             console.log(err);
         }
-        else if (!course){
+        else if (!c){
             console.log("Class not found");
         }
         else{
             console.log("success")
         }
     });
-    res.redirect('/all');
+    res.redirect('/showAll');
 });
 
 
@@ -312,9 +307,9 @@ app.use('/createClass', (req, res) => {
 		else {
 			// success message + update course classList to add the new class to db
 			res.send('successfully added  course '  +newClass.courseNumber + ' to the database!');
-			var filter = { 'name' : req.query.name };
+			var filter = { 'name' : req.query.courseNumber };
 			var action = { '$push' : { 'classList' : newClass}};
-			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
+			Class.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
 					console.log('error!'); 
 				}
