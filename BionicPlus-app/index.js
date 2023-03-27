@@ -156,8 +156,9 @@ app.use('/allClasses', (req, res) => {
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
-				 // creates a link to the /editClass endpoint
-				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Edit]</a>");
+				 // creates an html link to the /editClass endpoint
+				res.write(" <a href=\"/public/editclass.html" + "\">[Edit]</a>");
+				//res.write(" <a href=\"/changeClass?name=" + c.courseNumber + "\">[Edit]</a>");
 			    res.write('</li>');
 
 			});
@@ -210,27 +211,26 @@ app.use('/showAll', (req, res) => {
 				if (course.classList.length == 0){
 					res.write('There are no classes to display');
 				}
-					else{ //Writes all the classes
-						res.write('Here are the classes in the course:');
-						res.write('<ul>');
-						// show all the classes
-						classes.forEach(  (c) => {
-						    res.write('<li>');
-						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
-						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
-						    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
-			 			   res.write('</li>');
-						});
-					}
-
-				});	
+				else{ //Writes all the classes
+					res.write('Here are the classes in the course:');
+					res.write('<ul>');
+					//!!!!!!
+					// classes.forEach(  (c) => {
+					// res.write('<li>');
+					// res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+					// // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
+					// res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
+					// res.write('</li>');
+					// });
+				}
+			});	
 			res.write('</ul>');
 			res.end();
 			}
-		
 		}
 	});
 });
+
 
 app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
     var filter = {'name': req.query.name};
@@ -257,38 +257,20 @@ app.use('/updateCourseView',(req,res)=>{
 });
 
 app.use('/addClassView',(req,res)=>{
-console.log("Got to classView");
+	console.log("Got to classView");
 	res.redirect('/public/classform.html?name=' + req.query.name);
 });
+
+// app.use('/changeClass',(req,res)=>{
+// 	res.redirect('/public/classform.html?name=' + req.query.name);
+// });
 
 
 /*************************************************/
 								//Class Endpoints // 
 
-app.use('/updateClass', (req, res) => {
-    var newDays = req.query.days;
-    var newProf = req.query.prof;
-    var newRating = req.query.rating;
-    var newTime = req.query.time;
-    var filter = {'CourseNumber': req.query.courseNumber};
-    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, time: newTime}}
-    Class.findOneAndUpdate( filter, action, (err,c) => {
-        if (err) {
-            console.log(err);
-        }
-        else if (!course){
-            console.log("Class not found");
-        }
-        else{
-            console.log("success")
-        }
-    });
-    res.redirect('/all');
-});
-
 
 //add classes directed from classform.html
-
 //works for second course but not for first? 
 app.use('/createClass', (req, res) => {
 	//construct the Class from the form data which is in the request body
@@ -299,6 +281,7 @@ app.use('/createClass', (req, res) => {
 		semester: req.body.semester,
 		time: req.body.time,
 		courseID: req.body.courseID,
+		classListId: req.body.classListId
 	});
 
 	// // save the class to the database
@@ -311,8 +294,9 @@ app.use('/createClass', (req, res) => {
 		}
 		else {
 			// success message + update course classList to add the new class to db
-			res.send('successfully added  course '  +newClass.courseNumber + ' to the database!');
+			res.send('successfully added  course '  + newClass.courseNumber + ' to the database!');
 			var filter = { 'name' : req.query.name };
+			console.log("filter= " + filter);
 			var action = { '$push' : { 'classList' : newClass}};
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
@@ -329,10 +313,10 @@ app.use('/createClass', (req, res) => {
 		});
 	});
 
-
 	//delete endpoint redirected from /showAll endpoint 
 	app.use('/deleteClass', (req, res) => {
 		var filter = { 'courseNumber' : req.query.courseNumber } 
+		console.log("filter= " + filter);
 		Class.findOneAndDelete( filter, (err, classes) => {
 				if (err) {
 					console.log(err);
@@ -348,32 +332,66 @@ app.use('/createClass', (req, res) => {
 		});
 
 
+	//modify class and allow classes to be crosslisted 
+	app.use('/editClass', (req, res) => {
+		var newDays = req.body.days;
+		var newProf = req.body.prof;
+		var newRating = req.body.rating;
+		var newTime = req.body.time;
+		var crosslistToggle = req.body.crosslistToggle; 
+		var updCrossList = req.body.classListId; 
+		var newCrossList = req.body.myText; 
 
-app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+		var filter = {'CourseNumber': req.query.courseNumber};
+		//if crossListToggle is not selected, update the existing crossListId if there is
+		if(!crosslistToggle) {
+			var action = {'$set': {days: newDays, prof: newProf, rating: newRating, 
+				time: newTime, crossListId: updCrossList }}
+		}
+		else { //if crosslist is toggled, set classListId to both current and new text
+			var action = {'$set': {days: newDays, prof: newProf, rating: newRating, 
+				time: newTime, classListId: `${updCrossList}-${newCrossList}`}}
+		}
+		Class.findOneAndUpdate( filter, action, (err,c) => {
+			if (err) {
+				console.log(err);
+			}
+			else if (!c){
+				console.log("Class not found");
+			}
+			else{
+				console.log("success")
+			}
+		});
+		res.redirect('/allClasses');
+	});
 
-	if(!req.query.courseID) {
-		res.write('No classes to be crosslisted');
-	}
-	else {
-	var { courseId1, courseId2 } = req.query.courseID; //store queries as array 
 
-	// Find the Class objects with the given courseIds
-	var class1 = Class.findOne({ courseID: courseId1 }).exec();
-	var class2 = Class.findOne({ courseID: courseId2 }).exec();
+// app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+
+// 	if(!req.query.courseID) {
+// 		res.write('No classes to be crosslisted');
+// 	}
+// 	else {
+// 	var { courseId1, courseId2 } = req.query.courseID; //store queries as array 
+
+// 	// Find the Class objects with the given courseIds
+// 	var class1 = Class.findOne({ courseID: courseId1 }).exec();
+// 	var class2 = Class.findOne({ courseID: courseId2 }).exec();
   
-	// If either of the classes does not exist, return an error
-	if (!class1 || !class2) {
-		res.send(err); 
-	    res.write('One or both classes not found');
-	}
+// 	// If either of the classes does not exist, return an error
+// 	if (!class1 || !class2) {
+// 		res.send(err); 
+// 	    res.write('One or both classes not found');
+// 	}
   
-	// crosslist the id query fields of the classes
-	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
+// 	// crosslist the id query fields of the classes
+// 	var crosslistedClass = {classListId: `${class1.courseId}-${class2.courseId}`};
   
-	// return crosslisted fields 
-	return res.json(crosslistedClass);
-	}
-  });
+// 	// return crosslisted fields 
+// 	return res.json(crosslistedClass);
+// 	}
+//   });
   
 
 

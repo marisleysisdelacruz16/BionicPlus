@@ -13,6 +13,7 @@ var classSchema = new Schema({
 	semester: String,
 	time: String,
 	courseID: String,
+	crossListId: String
     });
 
 module.exports = mongoose.model('Class', classSchema);
