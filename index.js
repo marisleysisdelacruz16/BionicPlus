@@ -225,11 +225,7 @@ app.use('/allClasses', (req, res) => {
 	    }).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 });
 
-//endpoint for all courses and all classes
 
-app.get('/courses',(req,res) => {
-
-})
 app.use('/showAll', (req, res) => {
 //Finds all the courses, does error handling
 	Course.find( {}, (err, courses) => {

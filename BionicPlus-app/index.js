@@ -175,9 +175,21 @@ app.use('/allClasses', (req, res) => {
 
 //endpoint for all courses and all classes
 
-app.get('/courses',(req,res) => {
 
-})
+app.get('/courses', async(req, res) => {
+		try {
+			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
+			const db = client.db();
+			const data = await db.collection.find().toArray();
+			res.json(data);
+			client.close();
+		}
+		catch (error) {
+			console.error(error);
+			res.status(500).json({message: 'Internal server error'});
+		}
+
+	});
 app.use('/showAll', (req, res) => {
 //Finds all the courses, does error handling
 	Course.find( {}, (err, courses) => {
