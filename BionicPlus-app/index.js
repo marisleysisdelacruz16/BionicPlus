@@ -271,6 +271,10 @@ app.use('/updateCourseView',(req,res)=>{
 	res.redirect('/public/updatecourseform.html?name=' + req.query.name);
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
+app.use('/updateClassView',(req,res)=>{
+	res.redirect('/public/updateclassform.html?name=' + req.query.courseNumber);
+//document.getElementById('courseName').innerHTML = req.query.name;
+});
 
 app.use('/addClassView',(req,res)=>{
 console.log("Got to classView");
