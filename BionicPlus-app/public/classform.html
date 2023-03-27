@@ -7,12 +7,11 @@
     const courseName = urlParams.get('name');
 
 window.onload = function(){
-    document.getElementById("form").action = "/createCourse?name="+courseName
+    document.getElementById("form").action = "/createClass?name="+courseName
 };
   </script>
 </head>
 
-<html>
 <body>
   <!-- Sidebar/menu -->
 <nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;" id="mySidebar"><br>
@@ -42,6 +41,8 @@ Time: <input name="time">
 Semester: <input name="semester">
 <p>
 Professor: <input name="prof">
+<p>
+Number of Credits: <input name="numCredits">
 <p>
 <input type="submit" value="Update Course!">
 </form>

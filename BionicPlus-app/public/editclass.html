@@ -1,0 +1,71 @@
+<html>
+<head>
+    <script type="text/javascript">
+	const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const number = urlParams.get('name');
+
+window.onload = function(){
+    document.getElementById("form").action = "/updateClass?name="+number
+};
+  </script>
+</head>
+
+<html>
+<body>
+<form id="form" method="post">
+
+Edit Mode: 
+      <script type="text/javascript">
+        document.write(number)
+      </script>
+<p>
+Days: <input name="days">
+<p>
+Time: <input name="time">
+<p>
+Number of Credits: <input name ="numCredits">
+<p>
+Semester: <input name="semester">
+<p>
+Professor: <input name="prof">
+<p>
+    <!-- create label to ask if client wants to crosslist a class -->
+    <label for="crosslist-toggle">Crosslist with another class?</label>
+    <!-- checkbox to check off if so, name will be used in js -->
+    <input type="checkbox" id="crosslist-toggle" name="crosslistToggle">
+
+    <!-- section for displaying text if toggled -->
+    <div id="crosslist-input" style="display: none;">
+        <!-- new label if toggled -->
+      <label for="crosslist-id">Course ID to crosslist with:</label>
+      <input type="text" id="crosslist-id" name="crosslistId">
+    </div>
+
+<p>
+<input type="Submit" value="Save Changes">
+</p>
+
+<script>
+    // get the toggle and the input 
+    const crosslistToggle = document.getElementById('crosslist-toggle');
+    const crosslistInput = document.getElementById('crosslist-input');
+  
+    // based on user input, display (and retrieve text) or don't display the crosslist text
+    crosslistToggle.addEventListener('change', () => {
+      if (crosslistToggle.checked) {
+        crosslistInput.style.display = 'block';
+        //get the text by id 
+        const myText = document.getElementById('crosslist-id'); 
+      } else {
+        crosslistInput.style.display = 'none';
+      }
+    });
+
+  </script>
+  
+
+</form> 
+</body>
+
+</html>

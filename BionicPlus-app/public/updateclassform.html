@@ -1,0 +1,37 @@
+<html>
+<head>
+    <script type="text/javascript">
+	const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const number = urlParams.get('name');
+
+window.onload = function(){
+    document.getElementById("form").action = "/updateClass?name="+number
+};
+  </script>
+</head>
+
+<body>
+<form id="form" method="post">
+
+    Updating class:
+    <script type="text/javascript">
+        document.write(number)
+      </script>
+    <p>
+        Meeting Days: <input name="days">
+    <p>
+        Professor: <input name="prof">
+    <p>
+        Rating: <input name="rating">
+    <p>
+        Number of Credits: <input name="numCredits">
+    <p>
+        Time: <input name="time">
+    <p>
+        <input type="submit" value="Update Class!">
+
+</form>
+</body>
+
+</html>
