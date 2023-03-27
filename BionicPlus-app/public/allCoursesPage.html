@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Courses</title>
+    </head>
+    <body>
+
+    <div id = "results"></div>
+    <script>
+        function getResults() {
+            fetch('http://localhost:3000/courses')
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                data.forEach(course => {
+                    console.log("course",course);
+                    const courseDiv = document.createElement('div');
+                    courseDiv.innerHTML = `<h2>${course.name}</h2><p>${course.department}</p>`;
+                    resultsDiv.appendChild(courseDiv);
+            });
+          });
+      }
+
+    </script> 
+ 
+
+</body>
+</html>

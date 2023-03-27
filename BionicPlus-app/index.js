@@ -5,10 +5,15 @@ var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 // import the classes
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 var mongo = require('mongodb');
+const { MongoClient } = require('mongodb');
+const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
+const courseCollection = require ("./Courses.js");
+
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
@@ -165,6 +170,10 @@ app.use('/allClasses', (req, res) => {
 });
 
 //endpoint for all courses and all classes
+
+app.get('/courses',(req,res) => {
+
+})
 app.use('/showAll', (req, res) => {
 //Finds all the courses, does error handling
 	Course.find( {}, (err, courses) => {
@@ -177,6 +186,8 @@ app.use('/showAll', (req, res) => {
 		    if (courses.length == 0) {
 			res.type('html').status(200);
 			res.write('There are no courses to display');
+			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
+			res.write('</li>');
 			res.end();
 			return;
 		    }
@@ -277,17 +288,32 @@ app.use('/updateClass', (req, res) => {
     res.redirect('/all');
 });
 
+app.get('/courses', async(req, res) => {
+	try {
+		const client = await MongoClient.connect(url,{ useNewUrlParser: true});
+		const db = client.db();
 
-app.use('/home',(req,res) => {
-	res.redirect('/public/index.html');});
+		const data = await db.collection('').find().toArray();
 
+		res.json(data);
 
+		client.close();
+	}
+	catch(error) {
+		console.error(error);
+		res.status(500).json({message: 'Internal server error'});
+	}
+	
+});
+	
 
 /*************************************************/
 
 app.use('/public', express.static('public'));
 
-app.use('/', (req, res) => { res.redirect('/showAll'); } );
+app.use('/',(req,res) => {
+	res.redirect('/public/homepage.html');});
+//app.use('/', (req, res) => { res.redirect('/showAll'); } );
 
 app.listen(3000,  () => {
 

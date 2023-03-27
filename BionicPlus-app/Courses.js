@@ -1,4 +1,6 @@
+const { appendFile } = require('fs');
 var mongoose = require('mongoose');
+
 
 // the host:port must match the location where you are running MongoDB
 // the "myDatabase" part can be anything you like
@@ -25,6 +27,9 @@ courseSchema.methods.standardizeName = function() {
     this.name = this.name.toLowerCase();
     return this.name;
 }
+
+const courseCollection = new mongoose.model("courseCollection",courseSchema);
+module.exports = courseCollection;
 
 /*
 var classSchema = new Schema({
