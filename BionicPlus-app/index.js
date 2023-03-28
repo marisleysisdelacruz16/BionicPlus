@@ -60,8 +60,59 @@ app.use('/createCourse', (req, res) => {
 		    res.send('successfully added ' + newCourse.name + ' to the database');
 		}
 	    } );
+		console.log(newCourse._id);
     }
     );
+
+	app.use('/deleteCourse', (req, res) => {
+		var filter = { 'name' : req.query.name };
+		Course.findOneAndDelete(filter, (err, deletedCourse) => {
+			if (err) {
+			   res.type('html').status(200);
+				console.log('uh oh -- error deleting course' + err);
+				res.write(err);
+			}
+			else if (!deletedCourse){
+				  res.type('html').status(200);
+				res.write('Course ' + deletedCourse.name + ' does not exist!');
+				res.end();
+				return;
+			}
+			else{
+				//Deletes all classes under the course
+				deletedCourse.classList.forEach( (classToDelete) => {
+					var filter = { 'courseNumber' : classToDelete.courseNumber } 
+					Class.findOneAndDelete( filter, (err, classes) => {
+						if (err) {
+							console.log(err);
+						}
+						else if (!classes){
+							console.log("Class can't be deleted because it does not exist");
+						}
+						else{
+						console.log("Successfully deleted!"); 
+						}
+					});
+				});
+					
+	
+	
+	
+				res.send('successfully removed ' + deletedCourse.name + ' from the database  \n' + " <a href=\"/showAll\">[Return to View All]</a>");
+			
+			}
+		});
+	});
+
+	app.use('/deleteCourseWarning', (req, res) => {
+		res.type('html').status(200);
+		res.write('Are you sure you want to delete the course ' + req.query.name +'?');
+						res.write('</li>');
+		res.write(" <a href=\"/deleteCourse?name=" + req.query.name + "\">[Yes]</a>");
+						res.write('</li>');
+		res.write(" <a href=\"/showAll\">[No, go back]</a>");
+		res.end();
+		});
 
 // app.use('/test', async (req, res) => {
 //    try {
@@ -175,21 +226,6 @@ app.use('/allClasses', (req, res) => {
 
 //endpoint for all courses and all classes
 
-
-app.get('/courses', async(req, res) => {
-		try {
-			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
-			const db = client.db();
-			const data = await db.collection.find().toArray();
-			res.json(data);
-			client.close();
-		}
-		catch (error) {
-			console.error(error);
-			res.status(500).json({message: 'Internal server error'});
-		}
-
-	});
 app.use('/showAll', (req, res) => {
 //Finds all the courses, does error handling
 	Course.find( {}, (err, courses) => {
@@ -327,7 +363,7 @@ app.use('/createClass', (req, res) => {
 		prof: req.body.prof,
 		semester: req.body.semester,
 		time: req.body.time,
-		courseID: req.body.courseID,
+		courseID: req.body.ID,
 	});
 
 	// // save the class to the database
