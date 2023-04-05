@@ -5,6 +5,9 @@ public class Schedule{
     public Schedule(){
         classList = new LinkedList<>();
     }
+    public List<String> getSchedule(){
+        return classList;
+    }
     public void addClass(String className){
         classList.add(className);
     }
