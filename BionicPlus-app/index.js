@@ -157,10 +157,12 @@ app.use('/allClasses', (req, res) => {
 			// show all the classes
 			classes.forEach(  (c) => {
 			    res.write('<li>');
+				//
 			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Required for Major: ' + c.majorRequirement + '; Number of Credits: ' + c.numCredits +'; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
+				//pass course name and id
 				 // creates a link to the /editClass endpoint
 				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Edit]</a>");
 			    res.write('</li>');
@@ -328,8 +330,8 @@ app.use('/createClass', (req, res) => {
 		}
 		else {
 			// success message + update course classList to add the new class to db
-			res.send('successfully added  course '  +newClass.courseNumber + ' to the database!');
-			var filter = { 'name' : req.query.courseNumber };
+			res.send('successfully added  course '  + newClass.courseNumber + ' to the database!');
+			var filter = { 'name' : req.query.name };
 			var action = { '$push' : { 'classList' : newClass}};
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
@@ -349,7 +351,8 @@ app.use('/createClass', (req, res) => {
 
 	//delete endpoint redirected from /showAll endpoint 
 	app.use('/deleteClass', (req, res) => {
-		var filter = { 'courseNumber' : req.query.courseNumber } 
+		//get class somehow to call on its id 
+		var filter = { 'ID' : _id } 
 		Class.findOneAndDelete( filter, (err, classes) => {
 				if (err) {
 					console.log(err);
