@@ -16,8 +16,7 @@ var courseSchema = new Schema({
 	domain: String,
 	majorRequirement: Boolean,
 	description: String,
-	classList: Array,
-	ID: String
+	classList: Array
 });
 
 // export courseSchema as a class called Course
