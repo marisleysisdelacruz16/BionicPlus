@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 
 public class Schedule{
     public LinkedList<String> classList;

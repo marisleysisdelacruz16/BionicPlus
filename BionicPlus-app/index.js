@@ -482,7 +482,7 @@ app.use('/createClass', (req, res) => {
 			}
 		)
 			
-				console.log(newAccount._id);
+				console.log(Account._id);
 		  });
 
 		  //Displays all accounts; for debugging purposes.
