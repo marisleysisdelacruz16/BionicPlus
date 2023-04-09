@@ -181,6 +181,34 @@ app.use('/allCourses', (req, res) => {
 		}
 	    }).sort({ 'department': 'asc' }); // this sorts them BEFORE rendering the results
 });
+app.use('/courses', (req, res) => {
+
+	// find all the Person objects in the database
+	Course.find( {}, (err, courses) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (courses.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no courses to display');
+			res.end();
+			return;
+		    }
+		    else {
+			// show all the courses
+			var data = [];
+			courses.forEach( (course) => {
+			    data.push({Name: course.name, department: course.department , level: course.level, domain: course.domain})
+
+		    });
+		    res.json(data);
+		   }
+    } // this sorts them BEFORE rendering the results
+});
+});
 //endpoint for all classes
 app.use('/allClasses', (req, res) => {
 
