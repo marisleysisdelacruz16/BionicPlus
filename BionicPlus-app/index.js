@@ -9,6 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // import the classes
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
+var Account = require('./Account.js');
 var mongo = require('mongodb');
 const { MongoClient } = require('mongodb');
 const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
@@ -113,6 +114,11 @@ app.use('/createCourse', (req, res) => {
 		res.write(" <a href=\"/showAll\">[No, go back]</a>");
 		res.end();
 		});
+
+
+	app.use('/test',async(req,res)=>{
+		res.json({"status" : "it works!"});
+	})
 
 // app.use('/test', async (req, res) => {
 //    try {
@@ -236,10 +242,12 @@ app.use('/allClasses', (req, res) => {
 			// show all the classes
 			classes.forEach(  (c) => {
 			    res.write('<li>');
+				//
 			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Required for Major: ' + c.majorRequirement + '; Number of Credits: ' + c.numCredits +'; Professor: ' + c.prof + '; Rating: ' + c.rating + '; Meeting Times: ' + c.time);
 			    // this creates a link to the /delete endpoint
 			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "\">[Delete]</a>");
 			    res.write('</li>');
+				//pass course name and id
 				 // creates a link to the /editClass endpoint
 				res.write(" <a href=\"/editClass?name=" + c.courseNumber + "\">[Edit]</a>");
 			    res.write('</li>');
@@ -404,8 +412,8 @@ app.use('/createClass', (req, res) => {
 		}
 		else {
 			// success message + update course classList to add the new class to db
-			res.send('successfully added  course '  +newClass.courseNumber + ' to the database!');
-			var filter = { 'name' : req.query.courseNumber };
+			res.send('successfully added  course '  + newClass.courseNumber + ' to the database!');
+			var filter = { 'name' : req.query.name };
 			var action = { '$push' : { 'classList' : newClass}};
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
@@ -425,7 +433,8 @@ app.use('/createClass', (req, res) => {
 
 	//delete endpoint redirected from /showAll endpoint 
 	app.use('/deleteClass', (req, res) => {
-		var filter = { 'courseNumber' : req.query.courseNumber } 
+		//get class somehow to call on its id 
+		var filter = { 'ID' : _id } 
 		Class.findOneAndDelete( filter, (err, classes) => {
 				if (err) {
 					console.log(err);
@@ -439,6 +448,106 @@ app.use('/createClass', (req, res) => {
 			});
 			res.redirect('/allClasses');
 		});
+
+		//Makew a new account; if the username is taken / it already exists, doesnt do so.
+		//Fields are username and password. ScheduleList to be filled later.
+		app.use('/createAccount', (req, res) => { 
+			var newAccount = new Account ({
+				username: req.query.username,
+				password: req.query.password,
+				scheduleList: []
+			});
+			//Checks if there's one that exists already
+			var filter = {'username' : req.query.username};
+
+			Account.findOne(filter, (err,account) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!account){// If the account isnt there, saves it
+					newAccount.save( (err) => {
+						if (err) {
+							res.json({'status' : err})
+						}
+						else {
+							// display the "successfull created" message,sends new account
+							res.json({'status' : 'Account ' + newAccount.username + ' added to to the database',
+									'newAccount' : newAccount});
+						}
+						} );
+				}
+				else{
+					res.json({'status' : 'Username taken!'})
+				}
+
+			}
+		)
+				console.log(newAccount._id);
+		  });
+
+		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
+		//Fields are username and password. ScheduleList to be filled later.
+		app.use('/loginAccount', (req, res) => { 
+
+			//Checks if there's one that exists already
+			var filter = {'username' : req.query.username};
+
+			Account.findOne(filter, (err,account) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!account){// If the account isnt there, says so
+					res.json({'status' : "Account doesn't exist!"})
+				}
+				else if (account && account.password != req.query.password){//If the account is there but the password is wrong, returns an error
+					res.json({'status' : "Incorrect password!"})
+				}
+				else{//Otherwise, returns the account object.
+					res.json({'status' : 'Login successful!',
+							'account' : account});
+				}
+
+			}
+		)
+			
+				console.log(Account._id);
+		  });
+
+		  //Displays all accounts; for debugging purposes.
+		  app.use('/allAccounts',(req,res)=>{
+			Account.find( {}, (err, accounts) => {
+				if (err) {
+					res.type('html').status(200);
+					console.log('uh oh' + err);
+					res.write(err);
+				}
+				else {
+					if (accounts.length == 0) {
+					res.type('html').status(200);
+					res.write('There are no accounts');
+					res.end();
+					return;
+					}
+		
+					else {
+					res.type('html').status(200);
+					res.write('Here are the accounts in the database:');
+					 
+		
+					res.write('<ul>');
+					// show all the classes
+					accounts.forEach(  (acc) => {
+						res.write('<li>');
+						res.write('Username: ' + acc.username + '; Password: ' + acc.password);
+					});
+					res.write('</ul>');
+					res.end();
+					}
+				}
+				}).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
+			});
+		
+		
 
 
 
