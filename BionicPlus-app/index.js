@@ -134,7 +134,20 @@ app.use('/createCourse', (req, res) => {
 
 
 	app.use('/test',async(req,res)=>{
-		res.json({"status" : "it works!"});
+		var inputClass = [];
+			Class.find( {}, (err, classes) => {
+				if (err) {
+					res.json({"status" : "err"});
+				}
+				else{
+					classes.forEach((c) =>{
+						inputClass.push(c);
+					});
+				}
+				res.json({"status" : inputClass})
+			});
+			
+		
 	})
 
 // app.use('/test', async (req, res) => {
@@ -364,6 +377,25 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
     res.redirect('/all');
 });
 
+app.use('/getSchedule', (req, res) => { 
+	//Finds the related account
+    var filter = {'username' : req.query.username};
+
+			Account.findOne(filter, (err,acc) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!acc){// If the account isnt there, something's wrong
+					res.json({'status' : 'Illegal State!'})
+				}
+				else{
+					res.json({'status' : 'Success','Schedule' : acc.schedule})
+				}
+
+			});
+    
+});
+
 app.use('/updateCourseView',(req,res)=>{
 	res.redirect('/public/updatecourseform.html?name=' + req.query.name);
 //document.getElementById('courseName').innerHTML = req.query.name;
@@ -502,11 +534,13 @@ app.use('/createClass', (req, res) => {
 		//Makew a new account; if the username is taken / it already exists, doesnt do so.
 		//Fields are username and password. ScheduleList to be filled later.
 		app.use('/createAccount', (req, res) => {
+			//Where the method starts
 			var newAccount = new Account ({
 				username: req.query.username,
 				password: req.query.password,
-				scheduleList: []
+				schedule: []
 			});
+		
 			//Checks if there's one that exists already
 			var filter = {'username' : req.query.username};
 
@@ -530,9 +564,73 @@ app.use('/createClass', (req, res) => {
 					res.json({'status' : 'Username taken!'})
 				}
 
-			}
-		)
-				console.log(newAccount._id);
+			});
+		
+		});
+		
+		  app.use('/addClassToSchedule', (req,res)=>{
+			
+			var filterClass= {'courseNumber' : req.query.courseNumber};
+			
+			//Finds the class
+			Class.findOne(filterClass, (err,c)=>{
+				if(err){
+					res.json({'status':err})
+				}
+				else if (!c){
+					res.json({'status':"Class doesn't exist!"})
+				}
+				else{
+					
+					var filterAcc = {'username' : req.query.username};
+					//Finds the account to get the existing list, then finds it again to update
+					Account.findOne(filterAcc, (err,account) => {
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!account){// Account should be there
+							res.json({'status' : "Illegal state!"})
+						
+						}
+						else{
+							if (!account.schedule){
+								var updatedSchedule = [];
+								updatedSchedule = updatedSchedule.concat(c)
+								var action = {schedule: updatedSchedule}
+							}
+							else{
+								var updatedSchedule = account.schedule;
+								updatedSchedule = updatedSchedule.concat(c);
+								var action = {'$set': {schedule: updatedSchedule}};
+								
+							}
+							
+							//Modifies and sets the account
+							//Where the method starts
+							
+						
+						Account.findOneAndUpdate(filterAcc,action,(err,acc) => {
+							if (err) {
+								res.json({'status' : err});
+							}
+							else if (!acc){
+								res.json({'status':"Account disappeared somehow? Should not happen"});
+							}
+							else if(!c){
+								res.json({'status': "Something happened to the class"})
+							}
+							else{
+								res.json({'status':"Updated Schedule!", 'schedule' : updatedSchedule})
+							}
+						});
+					}
+				});
+					
+				}
+			})
+
+			
+
 		  });
 
 		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
@@ -588,7 +686,7 @@ app.use('/createClass', (req, res) => {
 					// show all the classes
 					accounts.forEach(  (acc) => {
 						res.write('<li>');
-						res.write('Username: ' + acc.username + '; Password: ' + acc.password);
+						res.write('Username: ' + acc.username + '; Password: ' + acc.password + '; Schedule: ' + acc.schedule);
 					});
 					res.write('</ul>');
 					res.end();
