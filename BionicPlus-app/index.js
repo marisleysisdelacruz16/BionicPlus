@@ -10,6 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 var Account = require('./Account.js');
+var Review = require('./Review.js');
 var mongo = require('mongodb');
 const { MongoClient } = require('mongodb');
 const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
@@ -33,6 +34,22 @@ const { db } = require('./Classes.js');
 
 
 /***************************************/
+
+
+app.get('/courses', async(req, res) => {
+		try {
+			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
+			const db = client.db();
+			const data = await db.collection.find().toArray();
+			res.json(data);
+			client.close();
+		}
+		catch (error) {
+			console.error(error);
+			res.status(500).json({message: 'Internal server error'});
+		}
+
+	});
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
@@ -82,7 +99,7 @@ app.use('/createCourse', (req, res) => {
 			else{
 				//Deletes all classes under the course
 				deletedCourse.classList.forEach( (classToDelete) => {
-					var filter = { 'courseNumber' : classToDelete.courseNumber } 
+					var filter = { 'courseNumber' : classToDelete.courseNumber }
 					Class.findOneAndDelete( filter, (err, classes) => {
 						if (err) {
 							console.log(err);
@@ -91,16 +108,16 @@ app.use('/createCourse', (req, res) => {
 							console.log("Class can't be deleted because it does not exist");
 						}
 						else{
-						console.log("Successfully deleted!"); 
+						console.log("Successfully deleted!");
 						}
 					});
 				});
-					
-	
-	
-	
+
+
+
+
 				res.send('successfully removed ' + deletedCourse.name + ' from the database  \n' + " <a href=\"/showAll\">[Return to View All]</a>");
-			
+
 			}
 		});
 	});
@@ -135,7 +152,7 @@ app.use('/createCourse', (req, res) => {
 //     } catch (err) {
 //         console.log(err);
 //     }
-// }); 
+// });
 // endpoint for showing all the courses
 app.use('/allCourses', (req, res) => {
 
@@ -208,7 +225,7 @@ app.use('/allClasses', (req, res) => {
 		    else {
 			res.type('html').status(200);
 			res.write('Here are the classes in the database:');
-			 
+
 
 			res.write('<ul>');
 			// show all the classes
@@ -247,7 +264,7 @@ app.use('/showAll', (req, res) => {
 			res.type('html').status(200);
 			res.write('There are no courses to display');
 			res.write(" <a href=\"/public/courseform.html" + "\">[Add New Course]</a>");
-			res.write('</li>'); 
+			res.write('</li>');
 			res.end();
 			return;
 		}
@@ -296,7 +313,7 @@ app.use('/showAll', (req, res) => {
 			res.write('</ul>');
 			res.end();
 			}
-		
+
 		});
 	});
 
@@ -335,7 +352,7 @@ console.log("Got to classView");
 
 
 /*************************************************/
-								//Class Endpoints // 
+								//Class Endpoints //
 
 app.use('/updateClass', (req, res) => {
     var newDays = req.body.days;
@@ -362,7 +379,7 @@ app.use('/updateClass', (req, res) => {
 
 //add classes directed from classform.html
 
-//works for second course but not for first? 
+//works for second course but not for first?
 app.use('/createClass', (req, res) => {
 	//construct the Class from the form data which is in the request body
 	var newClass = new Class ({
@@ -389,13 +406,13 @@ app.use('/createClass', (req, res) => {
 			var action = { '$push' : { 'classList' : newClass}};
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
-					console.log('error!'); 
+					console.log('error!');
 				}
 				else if (!orig) {
-					console.log('no classes!'); 
+					console.log('no classes!');
 				}
 				else {
-					console.log('Updated class to course!'); 
+					console.log('Updated class to course!');
 				}
 			});
 		}
@@ -403,10 +420,10 @@ app.use('/createClass', (req, res) => {
 	});
 
 
-	//delete endpoint redirected from /showAll endpoint 
+	//delete endpoint redirected from /showAll endpoint
 	app.use('/deleteClass', (req, res) => {
-		//get class somehow to call on its id 
-		var filter = { 'ID' : _id } 
+		//get class somehow to call on its id
+		var filter = { 'ID' : _id }
 		Class.findOneAndDelete( filter, (err, classes) => {
 				if (err) {
 					console.log(err);
@@ -415,15 +432,48 @@ app.use('/createClass', (req, res) => {
 					console.log("Class can't be deleted because it does not exist");
 				}
 				else{
-					console.log("Successfully deleted!"); 
+					console.log("Successfully deleted!");
 				}
 			});
 			res.redirect('/allClasses');
 		});
 
+		app.post('/createReview', async (req,res)=> {
+			var newReview = new Review ({
+				title: req.body.title,
+				author: req.body.author,
+				// how would I do date?
+				content: req.body.content,
+				rating: req.body.rating,
+				commentsThread : []
+			});
+
+			// save the review to the database
+			newReview.save( (err) => {
+				if (err) {
+					res.type('html').status(200);
+					res.write('uh oh: ' + err);
+					console.log(err);
+					res.end();
+				}
+				else {
+					var action = { '$push' : { 'commentsThread' : newReview}};
+					Review.updateOne(action, {new: true}, (err) => {
+						if (err) {
+							console.log('error!');
+						}
+						else {
+							console.log('Added a review to the class!');
+						}
+					});
+				}
+				});
+			});
+
+
 		//Makew a new account; if the username is taken / it already exists, doesnt do so.
 		//Fields are username and password. ScheduleList to be filled later.
-		app.use('/createAccount', (req, res) => { 
+		app.use('/createAccount', (req, res) => {
 			var newAccount = new Account ({
 				username: req.query.username,
 				password: req.query.password,
@@ -459,7 +509,7 @@ app.use('/createClass', (req, res) => {
 
 		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
 		//Fields are username and password. ScheduleList to be filled later.
-		app.use('/loginAccount', (req, res) => { 
+		app.use('/loginAccount', (req, res) => {
 
 			//Checks if there's one that exists already
 			var filter = {'username' : req.query.username};
@@ -481,7 +531,7 @@ app.use('/createClass', (req, res) => {
 
 			}
 		)
-			
+
 				console.log(Account._id);
 		  });
 
@@ -500,12 +550,12 @@ app.use('/createClass', (req, res) => {
 					res.end();
 					return;
 					}
-		
+
 					else {
 					res.type('html').status(200);
 					res.write('Here are the accounts in the database:');
-					 
-		
+
+
 					res.write('<ul>');
 					// show all the classes
 					accounts.forEach(  (acc) => {
@@ -518,8 +568,8 @@ app.use('/createClass', (req, res) => {
 				}
 				}).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 			});
-		
-		
+
+
 
 
 
@@ -529,26 +579,26 @@ app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&cou
 		res.write('No classes to be crosslisted');
 	}
 	else {
-	var { courseId1, courseId2 } = req.query.courseID; //store queries as array 
+	var { courseId1, courseId2 } = req.query.courseID; //store queries as array
 
 	// Find the Class objects with the given courseIds
 	var class1 = Class.findOne({ courseID: courseId1 }).exec();
 	var class2 = Class.findOne({ courseID: courseId2 }).exec();
-  
+
 	// If either of the classes does not exist, return an error
 	if (!class1 || !class2) {
-		res.send(err); 
+		res.send(err);
 	    res.write('One or both classes not found');
 	}
-  
+
 	// crosslist the id query fields of the classes
 	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
-  
-	// return crosslisted fields 
+
+	// return crosslisted fields
 	return res.json(crosslistedClass);
 	}
   });
-  
+
 
 
 /*************************************************/
