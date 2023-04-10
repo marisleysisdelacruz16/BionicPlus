@@ -9,7 +9,7 @@ var mongoose = require('mongoose');
 var accountSchema = new mongoose.Schema({
 	username: {type: String, required: true, unique: true},
 	password: String,
-	scheduleList : Array
+	schedule : Array
     });
 
 module.exports = mongoose.model('Account', accountSchema);
