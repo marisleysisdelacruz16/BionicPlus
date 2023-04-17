@@ -290,6 +290,10 @@ app.use('/allClasses', (req, res) => {
 	    }).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 });
 
+app.use('/clearAll',(req,res)=>{
+
+});
+
 //endpoint for all courses and all classes
 
 app.use('/showAll', (req, res) => {
@@ -328,13 +332,11 @@ app.use('/showAll', (req, res) => {
 				    res.write('</li>');
 				// this creates a link to the /addClassView endpoint, which brings the user to the related html page
 				res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
-				    res.write('</li>');
-				res.write('</ul>');
+				
 				if (course.classList.length == 0){
 					res.write('There are no classes to display');
 				}
 				else{ //Writes all the classes
-						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
 						course.classList.forEach(  (c) => {
@@ -348,6 +350,8 @@ app.use('/showAll', (req, res) => {
                             res.write('</li>');
 						});
 					}
+				    res.write('</li>');
+				res.write('</ul>');
 
 				});
 			}
@@ -463,7 +467,10 @@ app.use('/createClass', (req, res) => {
 			// success message + update course classList to add the new class to db
 			res.send('successfully added  course '  + newClass.courseNumber + ' to the database!');
 			var filter = { 'name' : req.query.name };
-			var action = { '$push' : { 'classList' : newClass}};
+			var action = { $push : { 'classList' : newClass}};
+
+
+	
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
 					console.log('error!');
@@ -495,8 +502,20 @@ app.use('/createClass', (req, res) => {
 					console.log("Successfully deleted!");
 				}
 			});
+			if (req.query.courseName){
+				var filter2 = {'name' : req.query.courseName}
+				var action = {$unset : {"classList.$._id" : _id}}
+			Class.updateOne(filter2, action, (err,course)=>{
+				if (err) {
+					console.log(err);
+				}
+			});
+			}
 			res.redirect('/allClasses');
+		
+			
 		});
+		
 
 		app.post('/createReview', async (req,res)=> {
 			var newReview = new Review ({
@@ -583,55 +602,57 @@ app.use('/createClass', (req, res) => {
 				else{
 					
 					var filterAcc = {'username' : req.query.username};
+
+					const update = {
+						$push: { schedule: c }
+					  };
+				  
+				
+		
 					//Finds the account to get the existing list, then finds it again to update
-					Account.findOne(filterAcc, (err,account) => {
+					Account.updateOne(filterAcc, update, (err,account) => {
 						if (err){
 							res.json({'status' : err})
 						}
 						else if (!account){// Account should be there
-							res.json({'status' : "Illegal state!"})
+							res.json({'status' : 'Illegal state!'})
 						
 						}
 						else{
-							if (!account.schedule){
-								var updatedSchedule = [];
-								updatedSchedule = updatedSchedule.concat(c)
-								var action = {schedule: updatedSchedule}
-							}
-							else{
-								var updatedSchedule = account.schedule;
-								updatedSchedule = updatedSchedule.concat(c);
-								var action = {'$set': {schedule: updatedSchedule}};
-								
-							}
-							
-							//Modifies and sets the account
-							//Where the method starts
-							
-						
-						Account.findOneAndUpdate(filterAcc,action,(err,acc) => {
-							if (err) {
-								res.json({'status' : err});
-							}
-							else if (!acc){
-								res.json({'status':"Account disappeared somehow? Should not happen"});
-							}
-							else if(!c){
-								res.json({'status': "Something happened to the class"})
-							}
-							else{
-								res.json({'status':"Updated Schedule!", 'schedule' : updatedSchedule})
-							}
-						});
+							res.json({'status':'Added class!', 'account' : c})
+						}
+					});
 					}
 				});
-					
-				}
-			})
-
-			
-
 		  });
+
+		 /* app.use('/clearSchedule', (req,res)=>{
+			
+			
+			
+					var filterAcc = {'username' : req.query.username};
+
+					const update = {
+						$set: { schedule: [] }
+					  };
+				  
+				
+		
+					//Finds the account to get the existing list, then finds it again to update
+					Account.updateOne(filterAcc, update, (err,account) => {
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!account){// Account should be there
+							res.json({'status' : 'Illegal state!'})
+						
+						}
+						else{
+							res.json({'status':'Cleared schedule!'})
+						}
+					});
+				});*/
+		
 
 		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
 		//Fields are username and password. ScheduleList to be filled later.
