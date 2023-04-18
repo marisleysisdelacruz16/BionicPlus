@@ -36,7 +36,7 @@ const { db } = require('./Classes.js');
 /***************************************/
 
 
-app.get('/courses', async(req, res) => {
+/* app.get('/courses', async(req, res) => {
 		try {
 			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
 			const db = client.db();
@@ -49,7 +49,7 @@ app.get('/courses', async(req, res) => {
 			res.status(500).json({message: 'Internal server error'});
 		}
 
-	});
+	});*/
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
