@@ -35,8 +35,7 @@ app.get('/courses', async(req, res) => {
 		res.status(500).json({message: 'Internet server error'});
 	}
 
-});
-
+	});
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
@@ -374,6 +373,36 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
 app.use('/getSchedule', (req, res) => { 
 	//Finds the related account
     var filter = {'username' : req.query.username};
+	var scheduleFilter = {'_id' : req.query.scheduleID}
+
+			Account.findOne(filter, (err,acc) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!acc){// If the account isnt there, something's wrong
+					res.json({'status' : 'Illegal State!'})
+				}
+				else{
+					acc.schedule.findOne(scheduleFilter, (err,sched) =>{
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!acc){// If the schedule isn't there,not there.
+							res.json({'status' : 'Schedule not found!'})
+						}
+						else{res.json({'status' : 'Success','Schedule' : acc.schedule})
+					}
+					});
+					
+				}
+
+			});
+    
+});
+
+app.use('allSchedules',(req, res) => { 
+	//Finds the related account
+    var filter = {'username' : req.query.username};
 
 			Account.findOne(filter, (err,acc) =>{
 				if (err){
@@ -576,11 +605,35 @@ app.use('/createClass', (req, res) => {
 			});
 		
 		});
-		
+		//Makes a new blank schedule.
+		app.use('/createSchedule',(req,res)=>{
+			var filterAcc = {'username' : req.query.username};
+			var newSchedule = new Schedule ({
+				scheduleName: req.query.scheduleName,
+				classList : []
+			});
+
+			const update = {
+				$push: { schedule: newSchedule }
+			  };
+			
+			Account.updateOne(filterAcc, update, (err,account) => {
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!account){// Account should be there
+					res.json({'status' : 'Illegal state!'})
+				
+				}
+				else{
+					res.json({'status':'Created new schedule!', 'account' : newSchedule.scheduleName})
+				}
+			});
+		});
+		//Needs courseNumber to find the class in question, as well as the _id of the schedule
 		  app.use('/addClassToSchedule', (req,res)=>{
 			
 			var filterClass= {'courseNumber' : req.query.courseNumber};
-			
 			//Finds the class
 			Class.findOne(filterClass, (err,c)=>{
 				if(err){
@@ -594,7 +647,7 @@ app.use('/createClass', (req, res) => {
 					var filterAcc = {'username' : req.query.username};
 
 					const update = {
-						$push: { schedule: c }
+						$push: { "schedule.$._id": req.query.scheduleID }
 					  };
 				  
 				
