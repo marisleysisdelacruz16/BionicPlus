@@ -10,13 +10,14 @@ var Schema = mongoose.Schema;
 var Class = require('./Classes.js');
 
 var courseSchema = new Schema({
-	name: {type: String, required: true, unique: true},
+	name: {type: String, default: 'CS'}, //, required: true, unique: true
 	department: String,
 	level: String,
 	domain: String,
 	majorRequirement: Boolean,
 	description: String,
-	classList: Array
+	classList: Array,
+	crossList: {type: String, default: 'none'}
 });
 
 // export courseSchema as a class called Course

@@ -12,11 +12,13 @@ var classSchema = new Schema({
 	prof: String,
 	semester: String,
 	time: String,
-	courseID: String,
-	crossListId: String
+	courseID: String
     });
 
 module.exports = mongoose.model('Class', classSchema);
+// const Model = mongoose.model('Class', classSchema);
+// const doc = new Model(); 
+// console.log(doc._id instanceof mongoose.Types.ObjectId); // true
 
 classSchema.methods.standardizeName = function() {
     this.name = this.name.toLowerCase();

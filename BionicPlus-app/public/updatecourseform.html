@@ -19,6 +19,9 @@ Updating course:
       <script type="text/javascript">
         document.write(number)
       </script>
+
+<p>
+Name: <input name="name">
 <p>
 Department: <input name="department">
 <p>
@@ -26,8 +29,51 @@ Level: <input name="level">
 <p>
 Description: <input name="description">
 <p>
-<input type="submit" value="Update Course!">
 
+<!-- <input type="submit" value="Update Course!">
+
+  <-- create label to ask if client wants to crosslist a class -->
+  <label for="crosslist-toggle">Crosslist with another class?</label>
+  <!-- checkbox to check off if so, name will be used in js -->
+  <input type="checkbox" id="crosslist-toggle" name="crosslistToggle">
+
+  <!-- section for displaying text if toggled -->
+  <div id="crosslist-input" style="display: none;">
+      <!-- new label if toggled -->
+    <label for="crosslistId">Course Name to crosslist with:</label>
+    <input type="text" id="crosslistId" name="crosslistText"> 
+    <!-- name="crosslist-Text" -->
+    <!-- name was crosslistId -->
+  </div>
+
+<p>
+<input onClick=myFunction() type="submit" value="Save Changes">
+</p>
+
+<script>
+  // get the toggle and the input 
+  const crosslistToggle = document.getElementById('crosslist-toggle');
+  const crosslistInput = document.getElementById('crosslist-input');
+
+  // based on user input, display (and retrieve text) or don't display the crosslist text
+  crosslistToggle.addEventListener('change', () => {
+    if (crosslistToggle.checked) {
+      crosslistInput.style.display = 'block';
+      //get the text by id 
+      const myText = document.getElementById('crosslistId'); 
+    } else {
+      crosslistInput.style.display = 'none';
+    }
+  }); 
+
+function myFunction() {
+  window.location.href('http://localhost:3000/showAll');
+  // document.getElementById("form").action = "/updateClass?name="+number
+};
+
+
+
+</script>
 </form>
 </body>
 
