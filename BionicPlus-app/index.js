@@ -14,7 +14,6 @@ var Review = require('./Review.js');
 var mongo = require('mongodb');
 const { MongoClient } = require('mongodb');
 const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
-const courseCollection = require ("./Courses.js");
 
 const { db } = require('./Classes.js');
 const { deprecate } = require('util');
@@ -22,34 +21,22 @@ const { ObjectID } = require('mongodb');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-/* var courseSchema = new Schema({
-	name: {type: String, required: true, unique: true},
-	department: String,
-	level: String,
-	domain: String,
-	majorRequirement: Boolean,
-	description: String,
-	classList: Array,
-	ID: String
-});
- */
-
-
-/***************************************/
-
-
 app.get('/courses', async(req, res) => {
-		try {
-			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
-			const db = client.db();
-			const data = await db.collection.find().toArray();
-			res.json(data);
-			client.close();
-		}
-		catch (error) {
-			console.error(error);
-			res.status(500).json({message: 'Internal server error'});
-		}
+	try{
+		//connecting to MongoDB
+		const client = MongoClient.connect(url,{ useNewUrlParser: true});
+		//const data =  await db.collection('courseCollection').find().toArray();
+		const data = await Course.find();
+		
+		res.json(data);
+		//this.client.close();
+		//this.client.close();
+
+	}
+	catch(error) {
+		console.log(error);
+		res.status(500).json({message: 'Internet server error'});
+	}
 
 	});
 
@@ -78,10 +65,13 @@ app.use('/createCourse', (req, res) => {
 		}
 		else {
 		    // display the "successfull created" message
-		    res.send('successfully added ' + newCourse.name + ' to the database');
+			res.redirect('/public/allCoursesPage.html');
+		    //res.send('successfully added ' + newCourse.name + ' to the database');
+			
 		}
 	    } );
 		console.log(newCourse._id);
+		//res.redirect('/public/allCoursesPage.html');
     }
     );
 
@@ -216,7 +206,7 @@ app.use('/allCourses', (req, res) => {
 		}
 	    }).sort({ 'department': 'asc' }); // this sorts them BEFORE rendering the results
 });
-app.use('/courses', (req, res) => {
+app.use('/coursesjson', (req, res) => {
 
 	// find all the Person objects in the database
 	Course.find( {}, (err, courses) => {
@@ -368,13 +358,11 @@ app.use('/showAll', (req, res) => {
 				    res.write('</li>');
 				// this creates a link to the /addClassView endpoint, which brings the user to the related html page
 				res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
-				    res.write('</li>');
-				res.write('</ul>');
+				
 				if (course.classList.length == 0){
 					res.write('There are no classes to display');
 				}
 				else{ //Writes all the classes
-						res.write('Here are the classes in the course:');
 						res.write('<ul>');
 						// show all the classes
 						course.classList.forEach(  (c) => {
@@ -389,6 +377,8 @@ app.use('/showAll', (req, res) => {
 							res.write('</li>');
 						});
 					}
+				    res.write('</li>');
+				res.write('</ul>');
 
 				});
 			}
@@ -425,6 +415,36 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
 });
 
 app.use('/getSchedule', (req, res) => { 
+	//Finds the related account
+    var filter = {'username' : req.query.username};
+	var scheduleFilter = {'_id' : req.query.scheduleID}
+
+			Account.findOne(filter, (err,acc) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!acc){// If the account isnt there, something's wrong
+					res.json({'status' : 'Illegal State!'})
+				}
+				else{
+					acc.schedule.findOne(scheduleFilter, (err,sched) =>{
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!acc){// If the schedule isn't there,not there.
+							res.json({'status' : 'Schedule not found!'})
+						}
+						else{res.json({'status' : 'Success','Schedule' : acc.schedule})
+					}
+					});
+					
+				}
+
+			});
+    
+});
+
+app.use('allSchedules',(req, res) => { 
 	//Finds the related account
     var filter = {'username' : req.query.username};
 
@@ -541,7 +561,10 @@ app.use('/createClass', (req, res) => {
 			// success message + update course classList to add the new class to db
 			res.send('successfully added  course '  + newClass.courseNumber + ' to the database!');
 			var filter = { 'name' : req.query.name };
-			var action = { '$push' : { 'classList' : newClass}};
+			var action = { $push : { 'classList' : newClass}};
+
+
+	
 			Course.findOneAndUpdate(filter, action, {new: true}, (err, orig) => {
 				if (err) {
 					console.log('error!');
@@ -699,11 +722,35 @@ app.use('/createClass', (req, res) => {
 			});
 		
 		});
-		
+		//Makes a new blank schedule.
+		app.use('/createSchedule',(req,res)=>{
+			var filterAcc = {'username' : req.query.username};
+			var newSchedule = new Schedule ({
+				scheduleName: req.query.scheduleName,
+				classList : []
+			});
+
+			const update = {
+				$push: { schedule: newSchedule }
+			  };
+			
+			Account.updateOne(filterAcc, update, (err,account) => {
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!account){// Account should be there
+					res.json({'status' : 'Illegal state!'})
+				
+				}
+				else{
+					res.json({'status':'Created new schedule!', 'account' : newSchedule.scheduleName})
+				}
+			});
+		});
+		//Needs courseNumber to find the class in question, as well as the _id of the schedule
 		  app.use('/addClassToSchedule', (req,res)=>{
 			
 			var filterClass= {'courseNumber' : req.query.courseNumber};
-			
 			//Finds the class
 			Class.findOne(filterClass, (err,c)=>{
 				if(err){
@@ -715,55 +762,57 @@ app.use('/createClass', (req, res) => {
 				else{
 					
 					var filterAcc = {'username' : req.query.username};
+
+					const update = {
+						$push: { "schedule.$._id": req.query.scheduleID }
+					  };
+				  
+				
+		
 					//Finds the account to get the existing list, then finds it again to update
-					Account.findOne(filterAcc, (err,account) => {
+					Account.updateOne(filterAcc, update, (err,account) => {
 						if (err){
 							res.json({'status' : err})
 						}
 						else if (!account){// Account should be there
-							res.json({'status' : "Illegal state!"})
+							res.json({'status' : 'Illegal state!'})
 						
 						}
 						else{
-							if (!account.schedule){
-								var updatedSchedule = [];
-								updatedSchedule = updatedSchedule.concat(c)
-								var action = {schedule: updatedSchedule}
-							}
-							else{
-								var updatedSchedule = account.schedule;
-								updatedSchedule = updatedSchedule.concat(c);
-								var action = {'$set': {schedule: updatedSchedule}};
-								
-							}
-							
-							//Modifies and sets the account
-							//Where the method starts
-							
-						
-						Account.findOneAndUpdate(filterAcc,action,(err,acc) => {
-							if (err) {
-								res.json({'status' : err});
-							}
-							else if (!acc){
-								res.json({'status':"Account disappeared somehow? Should not happen"});
-							}
-							else if(!c){
-								res.json({'status': "Something happened to the class"})
-							}
-							else{
-								res.json({'status':"Updated Schedule!", 'schedule' : updatedSchedule})
-							}
-						});
+							res.json({'status':'Added class!', 'account' : c})
+						}
+					});
 					}
 				});
-					
-				}
-			})
-
-			
-
 		  });
+
+		 /* app.use('/clearSchedule', (req,res)=>{
+			
+			
+			
+					var filterAcc = {'username' : req.query.username};
+
+					const update = {
+						$set: { schedule: [] }
+					  };
+				  
+				
+		
+					//Finds the account to get the existing list, then finds it again to update
+					Account.updateOne(filterAcc, update, (err,account) => {
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!account){// Account should be there
+							res.json({'status' : 'Illegal state!'})
+						
+						}
+						else{
+							res.json({'status':'Cleared schedule!'})
+						}
+					});
+				});*/
+		
 
 		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
 		//Fields are username and password. ScheduleList to be filled later.
