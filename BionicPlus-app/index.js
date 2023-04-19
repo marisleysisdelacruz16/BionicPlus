@@ -38,24 +38,6 @@ app.get('/courses', async(req, res) => {
 });
 
 
-
-
-
-app.get('/courses', async(req, res) => {
-		try {
-			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
-			const db = client.db();
-			const data = await db.collection.find().toArray();
-			res.json(data);
-			client.close();
-		}
-		catch (error) {
-			console.error(error);
-			res.status(500).json({message: 'Internal server error'});
-		}
-
-	});
-
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
 	var newCourse = new Course ({
@@ -80,10 +62,13 @@ app.use('/createCourse', (req, res) => {
 		}
 		else {
 		    // display the "successfull created" message
-		    res.send('successfully added ' + newCourse.name + ' to the database');
+			res.redirect('/public/allCoursesPage.html');
+		    //res.send('successfully added ' + newCourse.name + ' to the database');
+			
 		}
 	    } );
 		console.log(newCourse._id);
+		//res.redirect('/public/allCoursesPage.html');
     }
     );
 

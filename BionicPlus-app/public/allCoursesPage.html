@@ -12,6 +12,7 @@ body {font-size:16px;}
 
 </style>
     <title>All Courses</title>
+    <p id=""courses> All Courses </p>
     </head>
     <body>
 
@@ -49,25 +50,37 @@ function w3_close() {
 
 <!-- work on adding buttons -->
 
+<a href=./courseform.html id="button">[Add a Course]</a>
 <div id = "results" >  </div>
 <script>
+        function myFunction(item) {
+          console.log("item"+item.toString());
+        }
         function getResults() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
                 .then(data => {
                     const resultsDiv = document.getElementById('results');
                 data.forEach(course => {
-                    console.log("course",course);
                     const courseDiv = document.createElement('div');
+                   // s = "";
+                    if(course.classList) {
+                      course.classList.forEach(myFunction);
+                    }
+  
+  
                     if (course.majorRequirement) {
                       courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${course.classList}</p>`;
                     }
+                    //append it to a string 
+          
                     else {
                       courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: ${course.classList}</p>`;
                     }
                     resultsDiv.appendChild(courseDiv);
+                    console.log("course",course,course.classList);
 
             });
           });
