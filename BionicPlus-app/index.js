@@ -207,7 +207,7 @@ app.use('/allCourses', (req, res) => {
 		}
 	    }).sort({ 'department': 'asc' }); // this sorts them BEFORE rendering the results
 });
-app.use('/courses', (req, res) => {
+app.use('/coursesjson', (req, res) => {
 
 	// find all the Person objects in the database
 	Course.find( {}, (err, courses) => {
