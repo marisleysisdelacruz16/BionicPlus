@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<body>
-<!-- <meta charset="UTF-8">
+  <head> 
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+<link rel = "stylesheet" href="style.css"> 
 <style>
 body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
 body {font-size:16px;}
 </style>
 
-Sidebar/menu 
 <nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;" id="mySidebar"><br>
     <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
     <div class="w3-container">
@@ -18,15 +18,15 @@ Sidebar/menu
     </div>
     <div class="w3-bar-block">
       <a href="./homepage.html" onclick="location.reload()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
-      <a href="http://localhost:3000/allCourses" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Courses</a> 
-      <a href="http://localhost:3000/allClasses" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Classes</a> 
+      <a href="./allCoursesPage.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Courses</a>  
     </div>
   </nav>
--->
+</head>
 
-<form action="/createCourse" method="post">
+<body>
+<form id= "form" action="/createCourse" method="post">
 
-<a href=\"/showAll\">[Go Back]</a>
+<a href=./allCoursesPage.html>[Go Back]</a>
 <p>
 Name: <input name="name">
 <p>

@@ -27,8 +27,8 @@ courseSchema.methods.standardizeName = function() {
     return this.name;
 }
 
-const courseCollection = new mongoose.model("courseCollection",courseSchema);
-module.exports = courseCollection;
+//const courseCollection = new mongoose.model("courseCollection",courseSchema);
+//module.exports = courseCollection;
 
 /*
 var classSchema = new Schema({

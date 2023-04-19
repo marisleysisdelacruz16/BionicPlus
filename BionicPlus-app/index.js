@@ -14,43 +14,29 @@ var Review = require('./Review.js');
 var mongo = require('mongodb');
 const { MongoClient } = require('mongodb');
 const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
-const courseCollection = require ("./Courses.js");
 
-const { db } = require('./Classes.js');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-/* var courseSchema = new Schema({
-	name: {type: String, required: true, unique: true},
-	department: String,
-	level: String,
-	domain: String,
-	majorRequirement: Boolean,
-	description: String,
-	classList: Array,
-	ID: String
-});
- */
+app.get('/courses', async(req, res) => {
+	try{
+		//connecting to MongoDB
+		const client = MongoClient.connect(url,{ useNewUrlParser: true});
+		//const data =  await db.collection('courseCollection').find().toArray();
+		const data = await Course.find();
+		
+		res.json(data);
+		//this.client.close();
+		//this.client.close();
 
-
-/***************************************/
-
-
-/*app.get('/courses', async(req, res) => {
-		try {
-			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
-			const db = client.db(); 
-			const data = await db.collection.find().toArray();
-			res.json(data);
-			client.close();
-		}
-		catch (error) {
-			console.error(error);
-			res.status(500).json({message: 'Internal server error'});
-		}
+	}
+	catch(error) {
+		console.log(error);
+		res.status(500).json({message: 'Internet server error'});
+	}
 
 	});
-*/
+
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
 	var newCourse = new Course ({
@@ -75,10 +61,13 @@ app.use('/createCourse', (req, res) => {
 		}
 		else {
 		    // display the "successfull created" message
-		    res.send('successfully added ' + newCourse.name + ' to the database');
+			res.redirect('/public/allCoursesPage.html');
+		    //res.send('successfully added ' + newCourse.name + ' to the database');
+			
 		}
 	    } );
 		console.log(newCourse._id);
+		//res.redirect('/public/allCoursesPage.html');
     }
     );
 
