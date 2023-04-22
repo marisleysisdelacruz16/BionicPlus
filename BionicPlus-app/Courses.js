@@ -10,7 +10,7 @@ var Schema = mongoose.Schema;
 var Class = require('./Classes.js');
 
 var courseSchema = new Schema({
-	name: {type: String, default: 'CS'}, //, required: true, unique: true
+	name: {type: String, required: true, unique: true}, 
 	department: String,
 	level: String,
 	domain: String,

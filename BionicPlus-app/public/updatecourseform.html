@@ -4,9 +4,10 @@
 	const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const number = urlParams.get('name');
+    const id = urlParams.get('id'); 
 
 window.onload = function(){
-    document.getElementById("form").action = "/updateCourse?name="+number
+    document.getElementById("form").action = "/updateCourse?name="+number+"&id=" +id; 
 };
   </script>
 </head>
@@ -21,11 +22,11 @@ Updating course:
       </script>
 
 <p>
-Name: <input name="name">
-<p>
 Department: <input name="department">
 <p>
 Level: <input name="level">
+<p>
+Domain: <input name="domain">
 <p>
 Description: <input name="description">
 <p>
