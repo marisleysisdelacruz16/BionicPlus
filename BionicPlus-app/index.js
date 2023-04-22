@@ -208,7 +208,7 @@ app.use('/allCourses', (req, res) => {
 });
 app.use('/coursesjson', (req, res) => {
 
-	// find all the Person objects in the database
+	// find all the objects in the database
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -235,6 +235,55 @@ app.use('/coursesjson', (req, res) => {
 });
 });
 //endpoint for all classes
+app.use('/classesjson', (req, res) => {
+
+	// find all the objects in the database
+	Class.find( {}, (err, classes) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (classes.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no courses to display');
+			res.end();
+			return;
+		    }
+		    else {
+			// show all the courses
+			var data = [];
+			classes.forEach( (c) => {
+			    data.push({courseNumber: c.courseNumber, days: c.days , prof: c.prof, time: c.time, courseId: c.courseID, crossListId: c.crossListId})
+
+		    });
+		    res.json(data);
+		   }
+    } // this sorts them BEFORE rendering the results
+});
+});
+app.use('/search', (req, res) => {
+    res.redirect('/public/search.html');
+    var filter = {'courseNumber': req.body.courseNumber};
+    console.log(filter);
+    Class.findOne( filter, (err,c) => {
+        if (err) {
+            console.log(err);
+        }
+        else if (!c){
+            res.write("Class not available");
+
+            console.log("Class not found");
+        }
+        else{
+            console.log("success");
+            res.write('Here is the class: \n courseNumber: ' + c.courseNumber + '\n days: '+ c.days + '\n prof: '+ c.prof + '\n semester: '+ c.semester + '\n time: ' + c.time + '\n courseID: ' + c.couseID + '\n crossListId: ' + c.crossListId );
+            res.end();
+        }
+    });
+});
+
 app.use('/allClasses', (req, res) => {
 	Course.find( {}, (err, courses) => {
 		if (err) {
@@ -472,6 +521,10 @@ app.use('/updateClassView',(req,res)=>{
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 
+app.use('/searchClassView', (req,res)=>{
+    res.redirect('/public/search.html')
+});
+
 app.use('/addClassView',(req,res)=>{
 console.log("Got to classView");
 	res.redirect('/public/classform.html?name=' + req.query.name);
@@ -629,6 +682,8 @@ app.use('/createClass', (req, res) => {
 					});
 				res.redirect('/showAll');
 			}
+
+
 		});
 	});
 		
