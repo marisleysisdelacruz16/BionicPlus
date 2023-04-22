@@ -6,7 +6,7 @@ let classes = []
 searchInput.addEventListener("input", e => {
     const value = e.target.value.toLowerCase()
     classes.forEach(c =>{
-        const isVisible = c.courseNumber.toLowerCase().includes(value) || c.prof.toLowerCase().includes(value)
+        const isVisible = c.courseNumber.toLowerCase().includes(value) || c.prof.toLowerCase().includes(value) || c.days.toLowerCase().includes(value) || c.time.toLowerCase().includes(value)
         c.element.classList.toggle("hide", !isVisible)
     })
 })
@@ -23,8 +23,8 @@ fetch('http://localhost:3000/classesjson')
             const header = card.querySelector("[data-number]");
             const body = card.querySelector("[data-body]");
             header.textContent = c.courseNumber;
-            body.textContent = "Prof: " + c.prof + ", Days: " + c.days + ", Time: " + c.time
+            body.textContent = "Prof: " + c.prof + ", Days: " + c.days + ", Time: " + c.time + ", Semester: " + c.semester + ", Course ID: " + c.courseID
             classCardContainer.append(card);
-            return {courseNumber: c.courseNumber, prof: c.prof, element: card}
+            return {courseNumber: c.courseNumber, prof: c.prof, days: c.days, time: c.time, semester: c.semester, courseID: c.courseID, element: card}
             })
    });

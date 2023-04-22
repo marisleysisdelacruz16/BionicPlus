@@ -284,7 +284,7 @@ app.use('/search', (req, res) => {
     });
 });
 
-app.use('/allClasses', (req, res) => {
+app.use('/allClasses', (req, res) => { //broken
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -305,15 +305,17 @@ app.use('/allClasses', (req, res) => {
 			}
 			else{ 
 			res.write('Here are the classes in the database:');
+			res.write('<ul>');
 			course.classList.forEach(  (c) => {
 			    res.write('<li>');
 			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Required for Major: ' + course.majorRequirement + '; Number of Credits: ' + course.numCredits +'; Professor: ' + c.prof + '; Rating: ' + course.rating + '; Meeting Times: ' + c.time + '	CrossListed with: ' + c.crossListId);
 			    // this creates a link to the /delete endpoint
-			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "&id=" + c._id + "\">[Delete]</a>");
+			    res.write(' <a href=\"/deleteClass?name=' + c.courseNumber + '&id=' + c._id + '\">[Delete]</a>');
 			    res.write('</li>');
-				res.write(" <a href=\"/updateClassForm?name=" + course.name + "&id=" + c._id + "\">[Edit]</a>");
+				res.write(' <a href=\"/updateClassForm?name=' + course.name + '&id=' + c._id + '\">[Edit]</a>');
 			    res.write('</li>');
 			});
+			//res.write('</li>');
 			res.write('</ul>');
 		    }
 		});
@@ -416,12 +418,12 @@ app.use('/showAll', (req, res) => {
 						// show all the classes
 						course.classList.forEach(  (c) => {
 						    res.write('<li>');
-						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof + '; Semester: ' + c.semester);
 						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
 						    res.write(" <a href=\"/deleteClass?name=" + course.name + "&id=" + c._id +  "\">[Delete]</a>");
 			 			    res.write('</li>');
 
-                            res.write(" <a href=\"/updateClassView?name=" + c.CourseNumber + "\">[EditClass]</a>");
+                            res.write(" <a href=\"/updateClassView?name=" + course.name + "\">[EditClass]</a>");
                           																
 							res.write('</li>');
 						});
@@ -542,11 +544,11 @@ app.use('/updateClass', (req, res) => {
     var newDays = req.body.days;
     var newProf = req.body.prof;
     var newRating = req.body.rating;
-    var newCredits = req.body.numCredits;
+    var newSemester = req.body.semester;
     var newTime = req.body.time;
 
     var filter = {'name': req.query.name};
-    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, numCredits:newCredits, time: newTime}};
+    var action = {'$set': {days: newDays, prof: newProf, rating: newRating, semester: newSemester, time: newTime}};
 	
 	//find the course that class belongs to and then update it
 	Course.findOne( filter, (err, findCourse) => { 
@@ -583,7 +585,7 @@ app.use('/updateClass', (req, res) => {
 						});
 					}
 				});
-			res.redirect('/allClasses');
+			res.redirect('/showall');
 		}
 	});
 }); 
