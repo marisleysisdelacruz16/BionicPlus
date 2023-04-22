@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+<link rel = "stylesheet" href="style.css"> 
 <style>
 body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
 body {font-size:16px;}
@@ -41,33 +42,6 @@ body {font-size:16px;}
 
  <!-- Welcome -->
  <h1 class="w3-xxxlarge w3 w3-text-red" > <b> Welcome to Bionic Plus! </b></h1>
- 
-  
-  <!-- Contact -->
-  <div class="w3-container" id="contact" style="margin-top:75px">
-    <h1 class="w3-xxxlarge w3-text-red"><b>Contact.</b></h1>
-    <hr style="width:50px;border:5px solid red" class="w3-round">
-    <p> Having trouble with our app? Feel free to contact us.</p>
-    <form action="/action_page.php" target="_blank">
-      <div class="w3-section">
-        <label>Name</label>
-        <input class="w3-input w3-border" type="text" name="Name" required>
-      </div>
-      <div class="w3-section">
-        <label>Email</label>
-        <input class="w3-input w3-border" type="text" name="Email" required>
-      </div>
-      <div class="w3-section">
-        <label>Message</label>
-        <input class="w3-input w3-border" type="text" name="Message" required>
-      </div>
-      <button type="submit" class="w3-button w3-block w3-padding-large w3-red w3-margin-bottom">Send Message</button>
-    </form>  
-  </div>
-
-<!-- End page content -->
-</div>
-
 
 <script>
 // Script to open and close sidebar
@@ -80,10 +54,36 @@ function w3_close() {
   document.getElementById("mySidebar").style.display = "none";
   document.getElementById("myOverlay").style.display = "none";
 }
-
-// Modal Image Gallery
-
 </script>
+
+<div id = "resultsDiv" >  </div>
+<script>
+        function getResults() {
+            fetch('http://localhost:3000/courses')
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('resultsDiv');
+                data.forEach(course => {
+                    const courseDiv = document.createElement('div');
+                    //courseDiv.innerHTML = `<a href="./courseDetailsPage.html">${course.name}</a>`;
+                    courseDiv.innerHTML = `<h2>${course.name}</h2> <a href=./courseDetailsPage.html id="button">[View Course Details]</a> `;
+                    
+                    
+            
+                    //append it to a string 
+          
+                    resultsDiv.appendChild(courseDiv);
+                    console.log("results"+course)
+                })
+                    //<a href="./classDetailsPage.html" id="button"> [View all classes for this course]</a>
+            });
+          }
+
+  
+      getResults();
+
+
+    </script>
 
 </body>
 </html>
