@@ -53,6 +53,9 @@ function w3_close() {
 <a href=./courseform.html id="button">[Add a Course]</a>
 <div id = "results" >  </div>
 <script>
+        function myFunction(item) {
+          console.log("item"+item.toString());
+        }
         function getResults() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
@@ -70,9 +73,9 @@ function w3_close() {
                         myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "] ,\n";
 
                       }
-                      
+
                     }
- 
+
                     if (course.majorRequirement) {
                       courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${myString}</p>`;
@@ -94,6 +97,12 @@ function w3_close() {
       getResults();
 
     </script>
+
+
+
+ 
+
+ 
 
 </body>
 </html>

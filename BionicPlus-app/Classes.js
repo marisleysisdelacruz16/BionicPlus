@@ -12,7 +12,7 @@ var classSchema = new Schema({
 	prof: String,
 	semester: String,
 	time: String,
-	courseID: String
+	courseId: String
     });
 
 module.exports = mongoose.model('Class', classSchema);
