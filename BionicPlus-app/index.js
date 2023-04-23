@@ -713,8 +713,6 @@ app.use('/createClass', (req, res) => {
 		app.post('/createReview', async (req,res)=> {
 			var newReview = new Review ({
 				title: req.body.title,
-				author: req.body.author,
-				// how would I do date?
 				content: req.body.content,
 				rating: req.body.rating,
 				commentsThread : []
