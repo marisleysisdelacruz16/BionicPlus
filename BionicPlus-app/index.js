@@ -765,10 +765,10 @@ app.use('/createClass', (req, res) => {
 				rating: req.query.rating,
 				commentsThread : []
 			});
-			// console.log(JSON.stringify("title = " + newReview.title))
-			// console.log(JSON.stringify("content = " + newReview.content))
-			// console.log(JSON.stringify("rating = " + newReview.rating))
-			// console.log(JSON.stringify("review = " + newReview)); 
+			console.log(JSON.stringify("title = " + newReview.title))
+			console.log(JSON.stringify("content = " + newReview.content))
+			console.log(JSON.stringify("rating = " + newReview.rating))
+			console.log(JSON.stringify("review = " + newReview)); 
 
 			// save the review to the database
 			newReview.save( (err) => {
@@ -777,19 +777,14 @@ app.use('/createClass', (req, res) => {
 					res.json({'status' : "error saving " + err }) //REACHING THIS ERROR
 				}
 				else {
-					console.log("review made = " + newReview.title);
-					//var filter = { 'name' : req.query.name };
-					console.log("name= " + JSON.stringify(filter)); 
 					var filter = ({'id=' : newReview._id})
+					console.log("id=" + newReview._id);
 					var action = { '$push' : { 'commentsThread' : newReview}};
 					Review.findOneAndUpdate(filter, action, (err) => {
 						if (err) {
 							res.json({'status' : "error updating " + err})
 							console.log("error= " + err)
 						}
-						// else if (!orig) {
-						// 	res.json({'status' : "no reviews: " + orig})
-						// }
 						else {
 							res.json({'status' : "success! added a review to course"})
 							console.log('Added a review to the class!');
@@ -800,7 +795,7 @@ app.use('/createClass', (req, res) => {
 	});
 
 
-		app.use('/allReviews', (req, res) => {
+		app.get('/allReviews', (req, res) => {
 			//find all the reviews of given course from spinner
 			Review.find({}, (err, reviews) => {
 				if (err) {
@@ -813,15 +808,20 @@ app.use('/createClass', (req, res) => {
 					//display all reviews
 					//unsure what commentThread is doing unless it stores new reviews in 
 					//an array () but also as an ind obj ) and must iterate over
-					res.write('<ul>');
+					//res.write('<ul>');
+					var jsonArrray = [];
 					reviews.forEach( (review) => {
-						res.write('<li>');
-						res.write('Title: ' + review.title + '; Content: ' + review.connect + '; Rating: ' + review.rating);
-						//res.json( {'status' : 'success!', 'reviews' : reviews})
+						//res.write('<li>');
+						//res.write('Title: ' + review.title + '; Content: ' + review.content + '; Rating: ' + review.rating);
+						var jsonObject = {'Title': review.title, 'Content':review.content, 'Rating':review.rating};
+						jsonArrray.push(jsonObject);
+						//res.json( {'status' : 'success!', 'reviews' : review})
 					});
-					res.write('</ul>');
+					res.json({'status':jsonArrray});
+					//res.write('</ul>');
 					res.end();
 				}
+				///res.end();
 
 			});
 		});
