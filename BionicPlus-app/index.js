@@ -11,7 +11,9 @@ var Course = require('./Courses.js');
 var Class = require('./Classes.js');
 var Account = require('./Account.js');
 var Review = require('./Review.js');
+var Schedule = require('./Schedule.js')
 var mongo = require('mongodb');
+var mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
 const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
 
@@ -22,7 +24,7 @@ const { equal } = require('assert');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-app.get('/courses', async(req, res) => {
+app.get('/coursesJSON', async(req, res) => {
 	try{
 		//connecting to MongoDB
 		const client = MongoClient.connect(url,{ useNewUrlParser: true});
@@ -118,7 +120,7 @@ app.use('/createCourse', (req, res) => {
 				res.write(err);
 			}
 			else if (!deletedCourse){
-				res.type('html').status(200);
+				  res.type('html').status(200);
 				console.log("could not find course")
 				res.write('Course ' + deletedCourse.name + ' does not exist!');
 				res.end();
@@ -229,7 +231,7 @@ app.use('/allCourses', (req, res) => {
 			    // this creates a link to the /deleteCourse endpoint
 			    res.write(" <a href=\"/deleteCourse?name=" + course.name + "&id=" + course._id + "\">[Delete Course]</a>");
 			    //console.log(course._id);
-				res.write('</li>');
+			    res.write('</li>');
 			// this creates a link to the /createClass endpoint
 			    res.write(" <a href=\"/addClassView?name=" + course.name + "\">[Add Class]</a>");
 			    res.write('</li>');
@@ -356,8 +358,7 @@ app.use('/allClasses', (req, res) => { //broken
 		    }
 		});
 		}
-		res.end();
-	}).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
+	    }).sort({ 'courseNumber': 'asc' }); // this sorts them BEFORE rendering the results
 });
 
 
@@ -415,10 +416,10 @@ app.use('/showAll', (req, res) => {
 						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof + '; Semester: ' + c.semester);
 						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
 						    res.write(" <a href=\"/deleteClass?name=" + course.name + "&id=" + c._id +  "\">[Delete]</a>");
-			 			    res.write('</li>');
+			 			   res.write('</li>');
 
                             res.write(" <a href=\"/updateClassForm?name=" + course.name + "&id=" + c._id +  "\">[EditClass]</a>");										
-							res.write('</li>');
+                            res.write('</li>');
 						});
 					}
 				    res.write('</li>');
@@ -435,14 +436,14 @@ app.use('/showAll', (req, res) => {
 
 app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&description=introChem
    // var filter = {'id': req.query.id};
-	var filter = {'name': req.query.name};
+    var filter = {'name': req.query.name};
 	console.log("updating " + JSON.stringify(filter));
 //Set to req.body.description instead of req.query.description since we'll be doing this through an html form.
 	//var newName = req.body.name; 
 	var newDept = req.body.department;
 	var newLevel = req.body.level;
 	var newDomain = req.body.domain; 
-	var newDescription = req.body.description;
+    var newDescription = req.body.description;
     var newCross = req.body.crosslistText;  
 
 	// Find the course that we want to update 
@@ -473,27 +474,44 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
 			  
 	var action = {department: newDept, level: newLevel, domain: newDomain, description: newDescription, crossList: newCross};
 				Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
-				  if (err) {
-					console.log(err);
-				  }
+        if (err) {
+            console.log(err);
+        }
 				  else if (!updatedCourse) {
 					console.log("Course couldn't be updated");
-				  }
+        }
 				  else { 
 				  console.log("Successfully updated" + updatedCourse + "class!" ); 
-				}
-				}); 
+        }
+    });
 			}
 		//res.redirect("/showAll"); 
 		res.redirect('/public/allCoursesPage.html');
 		//res.redirect('/public/updateclassform.html?name=' + req.query.name + "&id=" + req.query.id);
 	});
-});		
+});
+
+app.use('/getAllSchedules',(req,res)=>{
+//Finds the related account
+var filter = {'username' : req.query.username};
+Account.findOne(filter, (err,acc) =>{
+	//error
+	if (err){
+		res.json({'status' : err})
+	}
+	else if (!acc){// If the account isnt there, something's wrong
+		res.json({'status' : 'Illegal State!'})
+	}//returns the full list
+	else{
+		res.json({'status' : 'Success', 'scheduleList' : acc.schedule})
+	}
+});
+
+});
 
 app.use('/getSchedule', (req, res) => { 
 	//Finds the related account
     var filter = {'username' : req.query.username};
-	var scheduleFilter = {'_id' : req.query.scheduleID}
 
 			Account.findOne(filter, (err,acc) =>{
 				if (err){
@@ -503,17 +521,19 @@ app.use('/getSchedule', (req, res) => {
 					res.json({'status' : 'Illegal State!'})
 				}
 				else{
-					acc.schedule.findOne(scheduleFilter, (err,sched) =>{
-						if (err){
-							res.json({'status' : err})
-						}
-						else if (!acc){// If the schedule isn't there,not there.
-							res.json({'status' : 'Schedule not found!'})
-						}
-						else{res.json({'status' : 'Success','Schedule' : acc.schedule})
+					//Flag to see if the schedule was found
+					var found = false;
+					for (let i = 0 ; i < acc.schedule.length; i++){//Will do nothing if it is found.
+						//res.write("ScheduleName");
+						if (!found && acc.schedule[i]["_id"] == req.query.scheduleID)
+							{
+								res.json({"status" : "success", "schedule" : acc.schedule[i]});
+								found = true;
+							}
+					}//If we didn't find it, we send a failure.
+					if (!found){
+						res.json({"status" : 'No schedule found!'})
 					}
-					});
-					
 				}
 
 			});
@@ -539,17 +559,14 @@ app.use('allSchedules',(req, res) => {
     
 });
 
+
 app.use('/updateCourseView',(req,res)=>{
-	res.redirect('/public/updatecourseform.html?name=' + req.query.name + "&id=" + req.query.id);
+	res.redirect('/public/updatecourseform.html?name=' + req.query.name);
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 app.use('/updateClassView',(req,res)=>{
-	res.redirect('/public/editclass.html?name=' + req.query.name + "&id=" + req.query.id);
+	res.redirect('/public/editclass.html?name=' + req.query.courseNumber);
 //document.getElementById('courseName').innerHTML = req.query.name;
-});
-
-app.use('/searchClassView', (req,res)=>{
-    res.redirect('/public/search.html')
 });
 
 app.use('/addClassView',(req,res)=>{
@@ -564,10 +581,13 @@ app.use('/updateClassForm',(req,res)=>{
 
 /*************************************************/
 								//Class Endpoints //
+
 app.use('/updateClass', (req, res) => {
     var newDays = req.body.days;
     var newProf = req.body.prof;
-	var newTime = req.body.time;
+    var newRating = req.body.rating;
+    var newCredits = req.body.numCredits;
+    var newTime = req.body.time;
     var newSemester = req.body.semester;
     
 
@@ -610,21 +630,22 @@ app.use('/updateClass', (req, res) => {
 		
 	 	var action = { '$set' : { classList : findCourse.classList } };
 			Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
-			if (err) {
-				console.log(err);
-			}
+        if (err) {
+            console.log(err);
+        }
 			else if (!updatedCourse) {
 				console.log("Course couldn't be updated");
-			}
-			else{ 
+        }
+        else{
 			console.log("Successfully updated" + updatedCourse + "class!" ); 
-				}
-			}); 
+        }
+    });
 		}
 	}
 	res.redirect("/showAll"); 
 	});		
 });
+
 
 //add classes directed from classform.html
 
@@ -677,20 +698,20 @@ app.use('/createClass', (req, res) => {
 		var filter = { 'name' : req.query.name };
 		Course.findOne( filter, (err, findCourse) => { 
 			console.log(findCourse);
-			if (err) {
-				console.log(err);
-			}
+				if (err) {
+					console.log(err);
+				}
 			else if (!findCourse) {
 				console.log("Class can't be deleted bc the Course does not exist");
-			}
-			else{ 
+				}
+				else{
 				console.log("found " + findCourse + " !");
 				//iterate over classList to find class to delete by comparing ids
 					findCourse.classList.forEach( (findClass ) => {
 						console.log(findClass)
 						if (err) {
 							console.log('error!');
-						}
+				}
 						else if (!findClass) {
 							console.log('class does not exist!');
 						}
@@ -705,28 +726,28 @@ app.use('/createClass', (req, res) => {
 							findCourse.classList.splice(classIndex, 1); //remove class from that index
 							var action = {'$set': {classList : findCourse.classList}}; //update class list
 							  Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
-								if (err) {
-								  console.log(err);
-								}
+				if (err) {
+					console.log(err);
+				}
 								else if (!updatedCourse) {
 									console.log("Course couldn't be updated");
 								}
 								else{ 
 									console.log("Successfully deleted class!" ); 
 								}
-							}); 
-						}
+			});
+			}
 					});
 				res.redirect('/showAll');
 			}
-
-
+		
+			
 		});
 	});
 		
 
 	// app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
-
+		
 	// 	var class2 = req.query.crosslistText; //get text to identify crosslisted course number
 	// 	//find the class we're in and update its field
 	// 	var filter = {'name': req.query.name}; 
@@ -870,47 +891,16 @@ app.use('/createClass', (req, res) => {
 				scheduleName: req.query.scheduleName,
 				classList : []
 			});
-
-			const update = {
-				$push: { schedule: newSchedule }
-			  };
-			
-			Account.updateOne(filterAcc, update, (err,account) => {
-				if (err){
-					res.json({'status' : err})
-				}
-				else if (!account){// Account should be there
-					res.json({'status' : 'Illegal state!'})
-				
-				}
-				else{
-					res.json({'status':'Created new schedule!', 'account' : newSchedule.scheduleName})
-				}
-			});
-		});
-		//Needs courseNumber to find the class in question, as well as the _id of the schedule
-		  app.use('/addClassToSchedule', (req,res)=>{
-			
-			var filterClass= {'courseNumber' : req.query.courseNumber};
-			//Finds the class
-			Class.findOne(filterClass, (err,c)=>{
-				if(err){
+			//Saves it so we have the ID somewhere
+			newSchedule.save( (err) => {
+				if (err) {
 					res.json({'status':err})
 				}
-				else if (!c){
-					res.json({'status':"Class doesn't exist!"})
-				}
-				else{
-					
-					var filterAcc = {'username' : req.query.username};
-
+				else {
+					//Then pushes it where it goes
 					const update = {
-						$push: { "schedule.$._id": req.query.scheduleID }
+						$push: { schedule: newSchedule }
 					  };
-				  
-				
-		
-					//Finds the account to get the existing list, then finds it again to update
 					Account.updateOne(filterAcc, update, (err,account) => {
 						if (err){
 							res.json({'status' : err})
@@ -920,14 +910,71 @@ app.use('/createClass', (req, res) => {
 						
 						}
 						else{
-							res.json({'status':'Added class!', 'account' : c})
+							res.json({'status':'Created new schedule!', 'schedule' : newSchedule.scheduleName, 'id' : newSchedule._id})
 						}
 					});
-					}
+				}
+				} );
+				
+			
+		});
+		//Needs courseNumber to find the class in question, as well as the _id of the schedule
+		  app.use('/addClassToSchedule', (req,res)=>{
+			
+			var filterClass= {'courseNumber' : req.query.courseNumber};
+			//Finds the class
+			Class.findOne(filterClass, (err,c)=>{
+				if(err){
+					res.json({'status':err,'err#':1})
+				}
+				else if (!c){
+					res.json({'status':"Class doesn't exist!"})
+				}
+				else{
+					Account.updateMany({ "username" : req.query.username},
+					{ $push: { "schedule.$[item].classList": c }},
+					{"arrayFilters" : [ {
+						"item._id" : mongoose.Types.ObjectId(req.query.scheduleID)}]},
+						(err,sched)=>{
+						if (err){
+							res.json({'status' : err})
+						}
+						else if (!sched){// Account should be there
+							res.json({'status' : 'Illegal state!'})
+						
+						}
+						else{
+							res.json({'status':'Added class!', 'account' : sched})
+						}});
+					
+				  }
 				});
-		  });
+			});
+				
 
-		 /* app.use('/clearSchedule', (req,res)=>{
+		  app.use('/deleteSchedule',(req,res)=>{
+			//Finds the related account
+			var filter = {'username' : req.query.username};
+			var update = {$pull:{
+				schedule: {_id : mongoose.Types.ObjectId(req.query.scheduleID) }
+			}}
+			Account.findOneAndUpdate(filter, update, (err,acc) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!acc){// If the account isnt there, something's wrong
+					res.json({'status' : 'Illegal State!'})
+				}
+				else{
+						res.json({'status' : 'success', 'result' : acc})
+					
+
+			});
+ 
+});
+
+
+		  app.use('/clearSchedule', (req,res)=>{
 			
 			
 			
@@ -952,7 +999,7 @@ app.use('/createClass', (req, res) => {
 							res.json({'status':'Cleared schedule!'})
 						}
 					});
-				});*/
+				});
 		
 
 		//Attempts to log in to an account. If it doesn't exist, says so; if the password is wrong, likewise.
@@ -1020,6 +1067,35 @@ app.use('/createClass', (req, res) => {
 
 
 
+
+app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+
+	if(!req.query.courseID) {
+		res.write('No classes to be crosslisted');
+	}
+	else {
+	var { courseId1, courseId2 } = req.query.courseID; //store queries as array
+
+	// Find the Class objects with the given courseIds
+	var class1 = Class.findOne({ courseID: courseId1 }).exec();
+	var class2 = Class.findOne({ courseID: courseId2 }).exec();
+
+	// If either of the classes does not exist, return an error
+	if (!class1 || !class2) {
+		res.send(err);
+	    res.write('One or both classes not found');
+	}
+
+	// crosslist the id query fields of the classes
+	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
+
+	// return crosslisted fields
+	return res.json(crosslistedClass);
+	}
+  });
+
+
+
 /*************************************************/
 
 app.use('/public', express.static('public'));
@@ -1031,4 +1107,4 @@ app.use('/',(req,res) => {
 app.listen(3000,  () => {
 
 	console.log('Listening on port 3000');
-});
+    });
