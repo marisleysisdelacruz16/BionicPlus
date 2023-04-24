@@ -76,8 +76,8 @@ app.use('/createCourse', (req, res) => {
     );
 
 	app.use('/deleteCourse', (req, res) => {
-		var filter = {'id': req.query._id}; 
-		//console.log("course to be deleted: " + filter); 
+		var filter = {'id': req.query.id}; 
+		//console.log("course to be deleted: " + JSON.stringify(filter)); 
 		// var filter = {_id : "6444026e1c184057106fcf41"}; 
 		Course.findOneAndDelete(filter, (err, deletedCourse) => {
 			if (err) {
@@ -87,6 +87,7 @@ app.use('/createCourse', (req, res) => {
 			}
 			else if (!deletedCourse){
 				res.type('html').status(200);
+				console.log("could not find course")
 				res.write('Course ' + deletedCourse.name + ' does not exist!');
 				res.end();
 				return;
@@ -107,10 +108,9 @@ app.use('/createCourse', (req, res) => {
 						}
 					});
 				});
-
-				res.send('successfully removed ' + deletedCourse.name + ' from the database  \n' + " <a href=\"/showAll\">[Return to View All]</a>");
-
+				//res.send('successfully removed ' + deletedCourse.name + ' from the database  \n' + " <a href=\"/showAll\">[Return to View All]</a>");
 			}
+			res.redirect('/public/allCoursesPage.html');
 		});
 	});
 
@@ -230,7 +230,7 @@ app.use('/coursesjson', (req, res) => {
 			// show all the courses
 			var data = [];
 			courses.forEach( (course) => {
-			    data.push({Name: course.name, department: course.department , level: course.level, domain: course.domain})
+			    data.push({Name: course.name, Id: course._id, department: course.department , level: course.level, domain: course.domain})
 
 		    });
 		    res.json(data);
@@ -305,10 +305,10 @@ app.use('/allClasses', (req, res) => { //broken
 				console.log('uh oh' + err);
 			}
 			else if (course.classList.length == 0){
-				res.write('There are no classes to display');
+				res.write('<p>There are no classes to display</p>');
 			}
 			else{ 
-			res.write('Here are the classes in the database:');
+			res.write('<h2>Here are the classes in the database:</h2>');
 			res.write('<ul>');
 			course.classList.forEach(  (c) => {
 			    res.write('<li>');
@@ -452,25 +452,11 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
 				}
 				}); 
 			}
-		res.redirect("/showAll"); 
+		//res.redirect("/showAll"); 
+		res.redirect('/public/allCoursesPage.html');
+		//res.redirect('/public/updateclassform.html?name=' + req.query.name + "&id=" + req.query.id);
 	});
 });		
-	 // });
-	
-//     var action = {'$set': {name: newName, department: newDept, level: newLevel, description: newDescription, crossList: newCross}};
-//     Course.findOneAndUpdate( filter, action, (err,course) => {
-//         if (err) {
-//             console.log(err);
-//         }
-//         else if (!course){
-//             console.log("Course not found");
-//         }
-//         else{
-//             console.log("success")
-//         }
-//     });
-//     res.redirect('/all');
-// });
 
 app.use('/getSchedule', (req, res) => { 
 	//Finds the related account
@@ -549,9 +535,9 @@ app.use('/updateClassForm',(req,res)=>{
 app.use('/updateClass', (req, res) => {
     var newDays = req.body.days;
     var newProf = req.body.prof;
-    var newRating = req.body.rating;
+	var newTime = req.body.time;
     var newSemester = req.body.semester;
-    var newTime = req.body.time;
+    
 
   // Find the course that class belongs to
   var filter = { name: req.query.name };
@@ -582,15 +568,13 @@ app.use('/updateClass', (req, res) => {
 			  if (newProf) {
 				classToUpdate.prof = newProf;
 			  }
-			  if (newRating) {
-				classToUpdate.rating = newRating;
-			  }
-			  if (newCredits) {
-				classToUpdate.numCredits = newCredits;
-			  }
 			  if (newTime) {
 				classToUpdate.time = newTime;
 			  }
+			  if (newSemester) {
+				classToUpdate.semester = newSemester; 
+			  }
+			 
 		
 	 	var action = { '$set' : { classList : findCourse.classList } };
 			Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
