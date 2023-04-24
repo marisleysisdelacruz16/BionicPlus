@@ -68,9 +68,8 @@ function w3_close() {
                   const button = document.createElement('button');
                   button.textContent = "[View Course Details]";
                   button.addEventListener('click',() => {
-                    window.location.href=`/course/${course._id}`;
-                    //window.location.href=`./courseDetailsPage.html`
-                  });
+                    //window.location.href=`./courseDetailsPage.html`;
+                    window.location.href=`/course/{$courseId}`});
                     
                     const courseDiv = document.createElement('div');
                     courseDiv.innerHTML = `<h2>${course.name}</h2> `;
