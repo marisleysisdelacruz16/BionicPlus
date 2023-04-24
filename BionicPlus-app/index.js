@@ -25,47 +25,47 @@ const { equal } = require('assert');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-/*app.get('/coursesJSON', async(req, res) => {
-	try{
-		//connecting to MongoDB
-		const client = MongoClient.connect(url,{ useNewUrlParser: true});
+// app.get('/coursesJSON', async(req, res) => {
+// 	try{
+// 		//connecting to MongoDB
+// 		const client = MongoClient.connect(url,{ useNewUrlParser: true});
 
-		// client.connect((err) => {
-		// 	if (err) {
-		// 	  console.error(err);
-		// 	  return;
-		// 	}
+// 		// client.connect((err) => {
+// 		// 	if (err) {
+// 		// 	  console.error(err);
+// 		// 	  return;
+// 		// 	}
 		  
-		// 	const db = client.db('coursesDatabase');
+// 		// 	const db = client.db('coursesDatabase');
 		  
-		// 	db.collection('reviews').dropIndex('author_1', (err, result) => {
-		// 	  if (err) {
-		// 		console.error(err); 
-		// 		return;
-		// 	  }
+// 		// 	db.collection('reviews').dropIndex('author_1', (err, result) => {
+// 		// 	  if (err) {
+// 		// 		console.error(err); 
+// 		// 		return;
+// 		// 	  }
 		  
-		// 	  console.log(result);
-		// 	  client.close();
-		// 	});
-		//   });
+// 		// 	  console.log(result);
+// 		// 	  client.close();
+// 		// 	});
+// 		//   });
 
 
 
 
-		//const data =  await db.collection('courseCollection').find().toArray();
-		const data = await Course.find();
+// 		//const data =  await db.collection('courseCollection').find().toArray();
+// 		const data = await Course.find();
 		
-		res.json(data);
-		//this.client.close();
-		//this.client.close();
+// 		res.json(data);
+// 		//this.client.close();
+// 		//this.client.close();
 
-	}
-	catch(error) {
-		console.log(error);
-		res.status(500).json({message: 'Internet server error'});
-	}
+// 	}
+// 	catch(error) {
+// 		console.log(error);
+// 		res.status(500).json({message: 'Internet server error'});
+// 	}
 
-	}); */
+// 	});
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
@@ -693,9 +693,9 @@ app.use('/createClass', (req, res) => {
 				if (err) {
 					console.log('error!');
 				}
-				else if (!orig) {
-					console.log('no classes!');
-				}
+				// else if (!orig) {
+				// 	console.log('no classes!');
+				// }
 				else {
 					console.log('Updated class to course!');
 				}
