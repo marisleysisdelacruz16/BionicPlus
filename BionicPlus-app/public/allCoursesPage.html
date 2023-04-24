@@ -53,9 +53,6 @@ function w3_close() {
 <a href=./courseform.html id="button">[Add a Course]</a>
 <div id = "results" >  </div>
 <script>
-        function myFunction(item) {
-          console.log("item"+item.toString());
-        }
         function getResults() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
@@ -63,25 +60,33 @@ function w3_close() {
                     const resultsDiv = document.getElementById('results');
                 data.forEach(course => {
                     const courseDiv = document.createElement('div');
-                   // s = "";
-                    if(course.classList) {
-                      course.classList.forEach(myFunction);
+                    var myArray = course.classList;
+                    var myString = "";
+                    for (var i=0; i < myArray.length;i++) {
+                      if (i == myArray.length-1) {
+                        myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "]\n";
+                      }
+                      else {
+                        myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "] ,\n";
+
+                      }
+                      
                     }
-  
-  
+ 
                     if (course.majorRequirement) {
                       courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
-                    <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${course.classList}</p>`;
+                    <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${myString}</p>`;
                     }
                     //append it to a string 
           
                     else {
                       courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
-                    <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: ${course.classList}</p>`;
+                    <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: <br> ${myString}</p>`;
                     }
+                    //console.log("classes",myString);
+                    console.log("course",course);
                     resultsDiv.appendChild(courseDiv);
-                    console.log("course",course,course.classList);
-
+                    //<a href="./classDetailsPage.html" id="button"> [View all classes for this course]</a>
             });
           });
         }
@@ -89,12 +94,6 @@ function w3_close() {
       getResults();
 
     </script>
-
-
-
- 
-
- 
 
 </body>
 </html>

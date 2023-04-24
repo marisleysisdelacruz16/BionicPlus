@@ -212,7 +212,7 @@ app.use('/allCourses', (req, res) => {
 
 app.use('/coursesjson', (req, res) => {
 
-	// find all the Person objects in the database
+	// find all the objects in the database
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -239,7 +239,56 @@ app.use('/coursesjson', (req, res) => {
 });
 });
 //endpoint for all classes
-app.use('/allClasses', (req, res) => {
+app.use('/classesjson', (req, res) => {
+
+	// find all the objects in the database
+	Class.find( {}, (err, classes) => {
+		if (err) {
+		    res.type('html').status(200);
+		    console.log('uh oh' + err);
+		    res.write(err);
+		}
+		else {
+		    if (classes.length == 0) {
+			res.type('html').status(200);
+			res.write('There are no courses to display');
+			res.end();
+			return;
+		    }
+		    else {
+			// show all the courses
+			var data = [];
+			classes.forEach( (c) => {
+			    data.push({courseNumber: c.courseNumber, days: c.days , prof: c.prof, time: c.time, courseId: c.courseID, crossListId: c.crossListId})
+
+		    });
+		    res.json(data);
+		   }
+    } // this sorts them BEFORE rendering the results
+});
+});
+app.use('/search', (req, res) => {
+    res.redirect('/public/search.html');
+    var filter = {'courseNumber': req.body.courseNumber};
+    console.log(filter);
+    Class.findOne( filter, (err,c) => {
+        if (err) {
+            console.log(err);
+        }
+        else if (!c){
+            res.write("Class not available");
+
+            console.log("Class not found");
+        }
+        else{
+            console.log("success");
+            res.write('Here is the class: \n courseNumber: ' + c.courseNumber + '\n days: '+ c.days + '\n prof: '+ c.prof + '\n semester: '+ c.semester + '\n time: ' + c.time + '\n courseID: ' + c.couseID + '\n crossListId: ' + c.crossListId );
+            res.end();
+        }
+    });
+});
+
+app.use('/allClasses', (req, res) => { //broken
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -260,15 +309,17 @@ app.use('/allClasses', (req, res) => {
 			}
 			else{ 
 			res.write('Here are the classes in the database:');
+			res.write('<ul>');
 			course.classList.forEach(  (c) => {
 			    res.write('<li>');
 			    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Required for Major: ' + course.majorRequirement + '; Number of Credits: ' + course.numCredits +'; Professor: ' + c.prof + '; Rating: ' + course.rating + '; Meeting Times: ' + c.time + '	CrossListed with: ' + c.crossListId);
 			    // this creates a link to the /delete endpoint
-			    res.write(" <a href=\"/deleteClass?name=" + c.courseNumber + "&id=" + c._id + "\">[Delete]</a>");
+			    res.write(' <a href=\"/deleteClass?name=' + c.courseNumber + '&id=' + c._id + '\">[Delete]</a>');
 			    res.write('</li>');
-				res.write(" <a href=\"/updateClassForm?name=" + course.name + "&id=" + c._id + "\">[Edit]</a>");
+				res.write(' <a href=\"/updateClassForm?name=' + course.name + '&id=' + c._id + '\">[Edit]</a>');
 			    res.write('</li>');
 			});
+			//res.write('</li>');
 			res.write('</ul>');
 		    }
 		});
@@ -329,7 +380,7 @@ app.use('/showAll', (req, res) => {
 						// show all the classes
 						course.classList.forEach(  (c) => {
 						    res.write('<li>');
-						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof);
+						    res.write('Number: ' + c.courseNumber + '; Meeting days: ' + c.days + '; Meeting Times: ' + c.time + '; Professor: ' + c.prof + '; Semester: ' + c.semester);
 						    // this creates a link to the /delete endpoint. Will want to add links to edit classes too.
 						    res.write(" <a href=\"/deleteClass?name=" + course.name + "&id=" + c._id +  "\">[Delete]</a>");
 			 			    res.write('</li>');
@@ -479,6 +530,10 @@ app.use('/updateClassView',(req,res)=>{
 //document.getElementById('courseName').innerHTML = req.query.name;
 });
 
+app.use('/searchClassView', (req,res)=>{
+    res.redirect('/public/search.html')
+});
+
 app.use('/addClassView',(req,res)=>{
 console.log("Got to classView");
 	res.redirect('/public/classform.html?name=' + req.query.name);
@@ -492,11 +547,11 @@ app.use('/updateClassForm',(req,res)=>{
 /*************************************************/
 								//Class Endpoints //
 app.use('/updateClass', (req, res) => {
-  var newDays = req.body.days;
-  var newProf = req.body.prof;
-  var newRating = req.body.rating;
-  var newCredits = req.body.numCredits;
-  var newTime = req.body.time;
+    var newDays = req.body.days;
+    var newProf = req.body.prof;
+    var newRating = req.body.rating;
+    var newSemester = req.body.semester;
+    var newTime = req.body.time;
 
   // Find the course that class belongs to
   var filter = { name: req.query.name };
@@ -649,6 +704,8 @@ app.use('/createClass', (req, res) => {
 					});
 				res.redirect('/showAll');
 			}
+
+
 		});
 	});
 		
