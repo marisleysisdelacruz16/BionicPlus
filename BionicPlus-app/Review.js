@@ -8,8 +8,6 @@ var mongoose = require('mongoose');
 //Class review schema has a title, author, date, content, rating, and comments thread.
 var reviewSchema = new mongoose.Schema({
   title: String,
-	author: {type: String, required: true, unique: true},
-  date: { type: Date, default: Date.now },
   content: String,
   rating: {
     type: Number,

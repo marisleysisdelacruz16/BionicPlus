@@ -3,6 +3,7 @@
     flex-direction: column;
     gap: .25rem;
 }
+body { font-family:'Poppins', sans-serif; }
 input {
     font-size: 1rem;
 }
@@ -15,14 +16,16 @@ input {
 }
 .class{
     border: 1px solid black;
-    background-color: white;
+    background-color: red;
     padding: .5rem;
 }
 .class > .classNumber{
+    color: white;
     margin-bottom: .25rem;
 }
 .class > .body {
     font-size: .8rem;
+    color: white;
 }
 .hide{
     display: none;

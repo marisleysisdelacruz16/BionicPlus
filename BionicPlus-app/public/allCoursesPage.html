@@ -24,7 +24,9 @@ body {font-size:16px;}
   </div>
   <div class="w3-bar-block">
     <a href="./homepage.html" onclick="location.reload()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
-    <a href="./allCoursesPage.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Courses</a> 
+    <a href="./allCoursesPage.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Courses</a>
+    <a href="./search.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Search Classes</a>
+
   </div>
 </nav>
 
@@ -53,6 +55,9 @@ function w3_close() {
 <a href=./courseform.html id="button">[Add a Course]</a> 
 <div id = "results" >  </div>
 <script>
+        function myFunction(item) {
+          console.log("item"+item.toString());
+        }
         function getResults() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
@@ -70,9 +75,9 @@ function w3_close() {
                         myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "] ,\n";
 
                       }
-                      
+
                     }
- 
+
                     if (course.majorRequirement) {
                       courseDiv.innerHTML = `<h2>${course.name}</h2>
                       <button style="margin:5px" type="button"> <a href= "./updatecourseform.html?name=${course.name}&id=${course._id}"> Edit Course</a></button>
@@ -112,6 +117,12 @@ function w3_close() {
       getResults();
 
     </script>
+
+
+
+ 
+
+ 
 
 </body>
 </html>

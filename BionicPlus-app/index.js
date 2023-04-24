@@ -256,10 +256,10 @@ app.use('/classesjson', (req, res) => {
 			return;
 		    }
 		    else {
-			// show all the courses
+			// show all the classes
 			var data = [];
 			classes.forEach( (c) => {
-			    data.push({courseNumber: c.courseNumber, days: c.days , prof: c.prof, time: c.time, courseId: c.courseID, crossListId: c.crossListId})
+			    data.push({courseNumber: c.courseNumber, days: c.days , prof: c.prof, time: c.time, semester:c.semester, courseId: c.courseId, crossListId: c.crossListId})
 
 		    });
 		    res.json(data);
@@ -282,7 +282,7 @@ app.use('/search', (req, res) => {
         }
         else{
             console.log("success");
-            res.write('Here is the class: \n courseNumber: ' + c.courseNumber + '\n days: '+ c.days + '\n prof: '+ c.prof + '\n semester: '+ c.semester + '\n time: ' + c.time + '\n courseID: ' + c.couseID + '\n crossListId: ' + c.crossListId );
+            res.write('Here is the class: \n courseNumber: ' + c.courseNumber + '\n days: '+ c.days + '\n prof: '+ c.prof + '\n semester: '+ c.semester + '\n time: ' + c.time + '\n courseId: ' + c.courseId + '\n crossListId: ' + c.crossListId );
             res.end();
         }
     });
@@ -605,7 +605,7 @@ app.use('/createClass', (req, res) => {
 		prof: req.body.prof,
 		semester: req.body.semester,
 		time: req.body.time,
-		courseID: req.body.ID,
+		courseId: req.body.courseId,
 	});
 
 	// // save the class to the database
@@ -717,8 +717,6 @@ app.use('/createClass', (req, res) => {
 		app.post('/createReview', async (req,res)=> {
 			var newReview = new Review ({
 				title: req.body.title,
-				author: req.body.author,
-				// how would I do date?
 				content: req.body.content,
 				rating: req.body.rating,
 				commentsThread : []
