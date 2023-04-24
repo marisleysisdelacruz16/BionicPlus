@@ -24,7 +24,7 @@ const { equal } = require('assert');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-app.get('/coursesJSON', async(req, res) => {
+/*app.get('/coursesJSON', async(req, res) => {
 	try{
 		//connecting to MongoDB
 		const client = MongoClient.connect(url,{ useNewUrlParser: true});
@@ -64,7 +64,7 @@ app.get('/coursesJSON', async(req, res) => {
 		res.status(500).json({message: 'Internet server error'});
 	}
 
-	});
+	}); */
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
@@ -969,6 +969,7 @@ app.use('/createClass', (req, res) => {
 						res.json({'status' : 'success', 'result' : acc})
 					
 
+			}
 			});
  
 });
