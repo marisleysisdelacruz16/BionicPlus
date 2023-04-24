@@ -816,7 +816,7 @@ app.use('/createClass', (req, res) => {
 					res.write('<ul>');
 					reviews.forEach( (review) => {
 						res.write('<li>');
-						res.write('Title: ' + review.title + '; Content: ' + review.connect + '; Rating: ' + review.rating);
+						res.write('Class: ' + review.className + ' Title: ' + review.title + '; Content: ' + review.connect + '; Rating: ' + review.rating);
 						//res.json( {'status' : 'success!', 'reviews' : reviews})
 					});
 					res.write('</ul>');
