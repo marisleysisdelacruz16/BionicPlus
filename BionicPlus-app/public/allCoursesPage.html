@@ -52,7 +52,7 @@ function w3_close() {
 
 <!-- work on adding buttons -->
 
-<a href=./courseform.html id="button">[Add a Course]</a>
+<a href=./courseform.html id="button">[Add a Course]</a> 
 <div id = "results" >  </div>
 <script>
         function getResults() {
@@ -76,13 +76,31 @@ function w3_close() {
                     }
 
                     if (course.majorRequirement) {
-                      courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
+                      courseDiv.innerHTML = `<h2>${course.name}</h2>
+                      <button style="margin:5px" type="button"> <a href= "./updatecourseform.html?name=${course.name}&id=${course._id}"> Edit Course</a></button>
+
+                      <form action="/deleteCourse" method="POST"> 
+                      <input type="hidden" name="id" value="${course._id}">
+                      <button type="submit" onclick="alert('Warning: You are now deleting this course')">  Delete Course </button>
+                      </form>
+
+                      <p> Department: ${course.department}</p><p> Level: ${course.level}</p>
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${myString}</p>`;
                     }
-                    //append it to a string 
-          
+              
+                    // onclick="alert('Warning: You are now deleting this course')"> 
+                    //<button type="button"> <a href= "./deleteform.html?id=${course._id}"> Delete Course </a> </button>
                     else {
-                      courseDiv.innerHTML = `<h2>${course.name}</h2><p> Department: ${course.department}</p><p> Level: ${course.level}</p>
+                      courseDiv.innerHTML = `<h2>${course.name}</h2> 
+                      <button style="margin:5px" type="button"> <a href= "./updatecourseform.html?name=${course.name}&id=${course._id}"> Edit Course</a></button>
+                    
+                      <form action="/deleteCourse" method="POST"> 
+                      <input type="hidden" name="id" value="${course._id}">
+                      <button type="submit" onclick="alert('Warning: You are now deleting this course')">  Delete Course </button>
+                      </form>
+
+                      <p> Department: ${course.department}</p>
+                      <p> Level: ${course.level}</p>
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: <br> ${myString}</p>`;
                     }
                     //console.log("classes",myString);
