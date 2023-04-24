@@ -85,8 +85,7 @@ app.use('/createCourse', (req, res) => {
 			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
 			const selectedCourse = await Course.findOne({_id:req.params.id});
 			//const selectedCourse = await Course.findById(new ObjectId(courseId));
-			res.json({selectedCourse});
-			
+			res.json(selectedCourse);
 			//res.json(selectedCourse);
 		}
 		// catch (error) {

@@ -80,21 +80,22 @@ app.use('/createCourse', (req, res) => {
 	app.get("/course/:id", async (req,res) => {
 		//var courseId = req.query.courseId;
 		//const courseId = req.params.id;
-	
+		try{
 			//connecting to MongoDB
 			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
 			const selectedCourse = await Course.findOne({_id:req.params.id});
 			//const selectedCourse = await Course.findById(new ObjectId(courseId));
-			res.json({selectedCourse});
-			
+			res.json(selectedCourse);
 			//res.json(selectedCourse);
 		}
-		// catch (error) {
-		// 	console.log(error);
-		// 	res.status(500).send("Error fetching course data");
-		// }
-
-	)
+		catch (error) {
+			console.log(error);
+			res.status(500).send("Error fetching course data");
+		}
+			//res.status(Course).json({course:selectedCourse});
+			//res.json('course',{course:selectedCourse});
+			//res.render('course',{course:selectedCourse});
+	});
 
 	app.use('/deleteCourse', (req, res) => {
 		var filter = {'id': req.query.id}; 

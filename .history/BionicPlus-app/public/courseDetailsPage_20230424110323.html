@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+<link rel = "stylesheet" href="style.css"> 
+<style>
+body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
+body {font-size:16px;}
+
+</style>
+    <title>Course Details</title>
+    <p> Course Details </p>
+    </head>
+    <body>
+
+               <!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;" id="mySidebar"><br>
+  <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+  <div class="w3-container">
+    <h3 class="w3-padding-64"><b>Bionic<br>Plus</b></h3>
+  </div>
+  <div class="w3-bar-block">
+    <a href="./homepage.html" onclick="location.reload()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
+    <a href="./allCoursesPage.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">View All Courses</a> 
+    <a href="./search.html" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Search Classes</a>
+  </div>
+</nav>
+
+<!-- Top menu on small screens -->
+<header class="w3-container w3-top w3-hide-large w3-red w3-xlarge w3-padding">
+  <a href="javascript:void(0)" class="w3-button w3-red w3-margin-right" onclick="w3_open()">☰</a>
+  <span>Bionic Plus</span>
+</header>
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+<script>
+        function w3_open() {
+  document.getElementById("mySidebar").style.display = "block";
+  document.getElementById("myOverlay").style.display = "block";
+}
+ 
+function w3_close() {
+  document.getElementById("mySidebar").style.display = "none";
+  document.getElementById("myOverlay").style.display = "none";
+}
+</script>
+
+<div id = "results" >  </div>
+
+<script>
+  function getResults() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get("id");
+    console.log("course",courseId);
+      fetch('http://localhost:3000/course/${courseId}')
+          .then(response => response.json())
+          .then(data => {
+            console.log(data,"data");
+              const resultsDiv = document.getElementById('results');
+              if(data)
+              var myArray = data.classList;
+              var myString = "";
+              for (var i=0; i < myArray.length;i++) {
+                if (i == myArray.length-1) {
+                  myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "]\n";
+                }
+                else {
+                  myString += "\n" + "["+ "Course Number: " + myArray[i].courseNumber+ "," + " Days: "+ myArray[i].days+ "," + " Professor: " + myArray[i].prof+ "," + " Semester: " + myArray[i].semester+ "," + " Time: " + myArray[i].time+ "," + " Course ID: " + myArray[i].courseID + "] ,\n";
+
+                }
+
+              }
+
+              if (course.majorRequirement) {
+                courseDiv.innerHTML = `<h2>${course.name}</h2>
+                <button style="margin:5px" type="button"> <a href= "./updatecourseform.html?name=${course.name}&id=${course._id}"> Edit Course</a></button>
+
+                <form action="/deleteCourse" method="POST"> 
+                <input type="hidden" name="id" value="${course._id}">
+                <button type="submit" onclick="alert('Warning: You are now deleting this course')">  Delete Course </button>
+                </form>
+
+                <p> Department: ${course.department}</p><p> Level: ${course.level}</p>
+              <p>Domain: ${course.domain}</p> <p> Major Requirement: Yes </p> <p>Description: ${course.description}</p><p>Classes: ${myString}</p>`;
+              }
+        
+              // onclick="alert('Warning: You are now deleting this course')"> 
+              //<button type="button"> <a href= "./deleteform.html?id=${course._id}"> Delete Course </a> </button>
+              else {
+                courseDiv.innerHTML = `<h2>${course.name}</h2> 
+                <button style="margin:5px" type="button"> <a href= "./updatecourseform.html?name=${course.name}&id=${course._id}"> Edit Course</a></button>
+              
+                <form action="/deleteCourse" method="POST"> 
+                <input type="hidden" name="id" value="${course._id}">
+                <button type="submit" onclick="alert('Warning: You are now deleting this course')">  Delete Course </button>
+                </form>
+
+                <p> Department: ${course.department}</p>
+                <p> Level: ${course.level}</p>
+              <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: <br> ${myString}</p>`;
+              }
+              //console.log("classes",myString);
+              
+              resultsDiv.appendChild(courseDiv);
+              //<a href="./classDetailsPage.html" id="button"> [View all classes for this course]</a>
+      });
+  }
+
+getResults();
+
+</script>
+
+
+</body>
+</html>

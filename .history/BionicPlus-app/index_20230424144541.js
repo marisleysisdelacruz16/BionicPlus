@@ -79,12 +79,12 @@ app.use('/createCourse', (req, res) => {
 
 	app.get("/course/:id", async (req,res) => {
 		//var courseId = req.query.courseId;
-		//const courseId = req.params.id;
+		const courseId = req.params.id;
 	
 			//connecting to MongoDB
 			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
-			const selectedCourse = await Course.findOne({_id:req.params.id});
-			//const selectedCourse = await Course.findById(new ObjectId(courseId));
+			//const selectedCourse = await Course.findOne({_id:req.params.id});
+			const selectedCourse = await Course.findById(new ObjectId(courseId));
 			res.json({selectedCourse});
 			
 			//res.json(selectedCourse);
