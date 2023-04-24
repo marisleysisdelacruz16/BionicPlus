@@ -552,6 +552,39 @@ app.use('/getSchedule', (req, res) => {
     
 });
 
+app.use('/getScheduleClasses',(req,res)=>{
+	var filter = {'username' : req.query.username};
+
+			Account.findOne(filter, (err,acc) =>{
+				if (err){
+					res.json({'status' : err})
+				}
+				else if (!acc){// If the account isnt there, something's wrong
+					res.json({'status' : 'No classes!'})
+				}
+				else{
+					var found = false;
+					var count = 0;
+					var count2 = 0;
+					for (let i = 0 ; i < acc.schedule.length; i++){//Will do nothing if it is found.
+						//res.write("ScheduleName");
+						if (acc.schedule[i]["_id"] == req.query.scheduleID)
+							{
+								res.json({"status" : "success", "schedule" : acc.schedule[i]});
+								found = true;
+								count2++
+							}
+							count++
+					}//If we didn't find it, we send a failure.
+					if (!found){
+						res.json({"status" : 'No schedule found!'})
+					}
+					
+				}
+
+			});
+})
+
 app.use('allSchedules',(req, res) => { 
 	//Finds the related account
     var filter = {'username' : req.query.username};
