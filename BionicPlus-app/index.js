@@ -694,55 +694,81 @@ app.use('/createClass', (req, res) => {
 	});
 		
 
-	app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+	// app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
 
-		var class2 = req.query.crosslistText; //get text to identify crosslisted course number
-		//find the class we're in and update its field
-		var filter = {'name': req.query.name}; 
-		var action = {'$set': {crossListId: `${Class.courseNumber}-${class2}`}}
-			Class.findOneAndUpdate( filter, action, (err,c) => {
-				if (err) {
-					console.log(err);
-				}
-				else if (!c){
-					console.log("Class not found");
-				}
-				else{
-					console.log("success")
-				}
-			});
-	});
+	// 	var class2 = req.query.crosslistText; //get text to identify crosslisted course number
+	// 	//find the class we're in and update its field
+	// 	var filter = {'name': req.query.name}; 
+	// 	var action = {'$set': {crossListId: `${Class.courseNumber}-${class2}`}}
+	// 		Class.findOneAndUpdate( filter, action, (err,c) => {
+	// 			if (err) {
+	// 				console.log(err);
+	// 			}
+	// 			else if (!c){
+	// 				console.log("Class not found");
+	// 			}
+	// 			else{
+	// 				console.log("success")
+	// 			}
+	// 		});
+	// });
 
-
-		app.post('/createReview', async (req,res)=> {
+		app.use('/createReview', (req,res)=> {
 			var newReview = new Review ({
 				title: req.body.title,
 				content: req.body.content,
 				rating: req.body.rating,
 				commentsThread : []
 			});
-
+			//console.log(title)
+		
 			// save the review to the database
 			newReview.save( (err) => {
 				if (err) {
-					res.type('html').status(200);
-					res.write('uh oh: ' + err);
-					console.log(err);
-					res.end();
+					//console.log(err);
+					res.json({'status' : "error saving " + err })
 				}
 				else {
+					//console.log("review made = " + JSON.stringify(newReview));
 					var action = { '$push' : { 'commentsThread' : newReview}};
 					Review.updateOne(action, {new: true}, (err) => {
 						if (err) {
-							console.log('error!');
+							res.json({'status' : "error updating"})
 						}
 						else {
+							res.json({'status' : "success! added a review to course"})
 							console.log('Added a review to the class!');
 						}
 					});
 				}
 				});
 			});
+
+		app.use('/allReviews', (req, res) => {
+			//find all the reviews of given course from spinner
+			Review.find({}, (err, reviews) => {
+				if (err) {
+					res.json({'status' : err})
+				}
+				else if (reviews.length == 0) {
+					res.json({'status' : "No Reviews exist in DB"})
+				}
+				else { 
+					//display all reviews
+					//unsure what commentThread is doing unless it stores new reviews in 
+					//an array () but also as an ind obj ) and must iterate over
+					res.write('<ul>');
+					reviews.forEach( (review) => {
+						res.write('<li>');
+						res.write('Title: ' + review.title + '; Content: ' + review.connect + '; Rating: ' + review.rating);
+						//res.json( {'status' : 'success!', 'reviews' : reviews})
+					});
+					res.write('</ul>');
+					res.end();
+				}
+
+			});
+		});
 
 
 		//Makew a new account; if the username is taken / it already exists, doesnt do so.
