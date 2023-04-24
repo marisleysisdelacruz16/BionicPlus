@@ -63,18 +63,19 @@ function w3_close() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
                 .then(data => {
-                    const resultsDiv = document.getElementById('resultsDiv');
+                  const resultsDiv = document.getElementById('resultsDiv');
                 data.forEach(course => {
+                  const button = document.createElement('button');
+                  button.textContent = "[View Course Details]";
+                  button.addEventListener('click',() => {
+                    window.location.href=`/course/${course._id}`;
+                  });
+                    
                     const courseDiv = document.createElement('div');
-                    //courseDiv.innerHTML = `<a href="./courseDetailsPage.html">${course.name}</a>`;
-                    courseDiv.innerHTML = `<h2>${course.name}</h2> <a href=./courseDetailsPage.html id="button">[View Course Details]</a> `;
-                    
-                    
-            
-                    //append it to a string 
-          
+                    courseDiv.innerHTML = `<h2>${course.name}</h2> `;
                     resultsDiv.appendChild(courseDiv);
-                    console.log("results"+course)
+                    resultsDiv.appendChild(button);
+                    
                 })
                     //<a href="./classDetailsPage.html" id="button"> [View all classes for this course]</a>
             });

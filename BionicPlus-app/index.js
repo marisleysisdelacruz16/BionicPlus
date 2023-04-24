@@ -18,6 +18,7 @@ const url = 'mongodb://127.0.0.1:27017/coursesDatabase';
 const { db } = require('./Classes.js');
 const { deprecate } = require('util');
 const { ObjectID } = require('mongodb');
+const { equal } = require('assert');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
@@ -74,6 +75,14 @@ app.use('/createCourse', (req, res) => {
 		//res.redirect('/public/allCoursesPage.html');
     }
     );
+
+	app.get("/course/:id", async (req,res) => {
+		//var courseId = req.query.courseId;
+			//connecting to MongoDB
+			const client = await MongoClient.connect(url,{ useNewUrlParser: true});
+			const selectedCourse = await Course.findOne({_id:req.params.id});
+			res.render('course',{course:selectedCourse});
+	});
 
 	app.use('/deleteCourse', (req, res) => {
 		var filter = {'id': req.query.id}; 

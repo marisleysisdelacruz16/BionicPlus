@@ -55,9 +55,6 @@ function w3_close() {
 <a href=./courseform.html id="button">[Add a Course]</a> 
 <div id = "results" >  </div>
 <script>
-        function myFunction(item) {
-          console.log("item"+item.toString());
-        }
         function getResults() {
             fetch('http://localhost:3000/courses')
                 .then(response => response.json())
@@ -107,7 +104,7 @@ function w3_close() {
                     <p>Domain: ${course.domain}</p> <p> Major Requirement: No </p> <p>Description: ${course.description}</p><p>Classes: <br> ${myString}</p>`;
                     }
                     //console.log("classes",myString);
-                    console.log("course",course);
+                    
                     resultsDiv.appendChild(courseDiv);
                     //<a href="./classDetailsPage.html" id="button"> [View all classes for this course]</a>
             });
