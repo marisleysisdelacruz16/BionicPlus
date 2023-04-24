@@ -28,6 +28,29 @@ app.get('/coursesJSON', async(req, res) => {
 	try{
 		//connecting to MongoDB
 		const client = MongoClient.connect(url,{ useNewUrlParser: true});
+
+		// client.connect((err) => {
+		// 	if (err) {
+		// 	  console.error(err);
+		// 	  return;
+		// 	}
+		  
+		// 	const db = client.db('coursesDatabase');
+		  
+		// 	db.collection('reviews').dropIndex('author_1', (err, result) => {
+		// 	  if (err) {
+		// 		console.error(err); 
+		// 		return;
+		// 	  }
+		  
+		// 	  console.log(result);
+		// 	  client.close();
+		// 	});
+		//   });
+
+
+
+
 		//const data =  await db.collection('courseCollection').find().toArray();
 		const data = await Course.find();
 		
@@ -670,7 +693,6 @@ app.use('/createClass', (req, res) => {
 	});
 
 
-
 	//delete endpoint redirected from /showAll endpoint
 	app.use('/deleteClass', (req, res) => {
 		var filter = { 'name' : req.query.name };
@@ -744,35 +766,60 @@ app.use('/createClass', (req, res) => {
 	// });
 
 		app.use('/createReview', (req,res)=> {
+			// var filter = { 'name' : req.query.name };
+			// console.log("name= " + JSON.stringify(filter)); 
+			//console.log("title = " + req.query.title)
+			//Review.findById(review.author)
+
+			// Review.collection.dropIndex('author_1', (err, result) => {
+			// 	if (err) {
+			// 	  console.error(err);
+			// 	  return;
+			// 	}
+			  
+			// 	console.log("successfully removed!");
+			//   });
+
 			var newReview = new Review ({
-				title: req.body.title,
-				content: req.body.content,
-				rating: req.body.rating,
+				title: req.query.title,
+				content: req.query.content,
+				rating: req.query.rating,
 				commentsThread : []
 			});
-			//console.log(title)
+			// console.log(JSON.stringify("title = " + newReview.title))
+			// console.log(JSON.stringify("content = " + newReview.content))
+			// console.log(JSON.stringify("rating = " + newReview.rating))
+			// console.log(JSON.stringify("review = " + newReview)); 
 
 			// save the review to the database
 			newReview.save( (err) => {
 				if (err) {
-					//console.log(err);
-					res.json({'status' : "error saving " + err })
+					console.log(err);
+					res.json({'status' : "error saving " + err }) //REACHING THIS ERROR
 				}
 				else {
-					//console.log("review made = " + JSON.stringify(newReview));
+					console.log("review made = " + newReview.title);
+					//var filter = { 'name' : req.query.name };
+					console.log("name= " + JSON.stringify(filter)); 
+					var filter = ({'id=' : newReview._id})
 					var action = { '$push' : { 'commentsThread' : newReview}};
-					Review.updateOne(action, {new: true}, (err) => {
+					Review.findOneAndUpdate(filter, action, (err) => {
 						if (err) {
-							res.json({'status' : "error updating"})
+							res.json({'status' : "error updating " + err})
+							console.log("error= " + err)
 						}
+						// else if (!orig) {
+						// 	res.json({'status' : "no reviews: " + orig})
+						// }
 						else {
 							res.json({'status' : "success! added a review to course"})
 							console.log('Added a review to the class!');
 						}
-					});
-				}
 				});
-			});
+			}
+		});
+	});
+
 
 		app.use('/allReviews', (req, res) => {
 			//find all the reviews of given course from spinner
