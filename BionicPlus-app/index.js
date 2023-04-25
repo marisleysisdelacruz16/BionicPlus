@@ -25,47 +25,24 @@ const { equal } = require('assert');
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 
-// app.get('/coursesJSON', async(req, res) => {
-// 	try{
-// 		//connecting to MongoDB
-// 		const client = MongoClient.connect(url,{ useNewUrlParser: true});
 
-// 		// client.connect((err) => {
-// 		// 	if (err) {
-// 		// 	  console.error(err);
-// 		// 	  return;
-// 		// 	}
-		  
-// 		// 	const db = client.db('coursesDatabase');
-		  
-// 		// 	db.collection('reviews').dropIndex('author_1', (err, result) => {
-// 		// 	  if (err) {
-// 		// 		console.error(err); 
-// 		// 		return;
-// 		// 	  }
-		  
-// 		// 	  console.log(result);
-// 		// 	  client.close();
-// 		// 	});
-// 		//   });
-
-
-
-
-// 		//const data =  await db.collection('courseCollection').find().toArray();
-// 		const data = await Course.find();
+app.get('/courses', async(req, res) => {
+	try{
+		//connecting to MongoDB
+		const client = MongoClient.connect(url,{ useNewUrlParser: true});
+		//const data =  await db.collection('courseCollection').find().toArray();
+		const data = await Course.find();
 		
-// 		res.json(data);
-// 		//this.client.close();
-// 		//this.client.close();
+		res.json(data);
+		//this.client.close();
+		//this.client.close();
+	}
+	catch(error) {
+		console.log(error);
+		res.status(500).json({message: 'Internet server error'});
+	}
+});
 
-// 	}
-// 	catch(error) {
-// 		console.log(error);
-// 		res.status(500).json({message: 'Internet server error'});
-// 	}
-
-// 	});
 
 app.use('/createCourse', (req, res) => {
 	// construct the Course from the form data which is in the request body
@@ -122,19 +99,21 @@ app.use('/createCourse', (req, res) => {
 	)
 
 	app.use('/deleteCourse', (req, res) => {
-		var filter = {'id': req.query.id}; 
+		var filter = {_id: req.query.id}; 
+		//console.log("filter= " + filter);
 		//console.log("course to be deleted: " + JSON.stringify(filter)); 
 		// var filter = {_id : "6444026e1c184057106fcf41"}; 
 		Course.findOneAndDelete(filter, (err, deletedCourse) => {
+			console.log(deletedCourse);
 			if (err) {
 			   res.type('html').status(200);
 				console.log('uh oh -- error deleting course' + err);
 				res.write(err);
 			}
 			else if (!deletedCourse){
-				  res.type('html').status(200);
-				console.log("could not find course")
-				res.write('Course ' + deletedCourse.name + ' does not exist!');
+				res.type('html').status(200);
+				//console.log("could not find course")
+				console.log('Course ' + deletedCourse + ' does not exist!');
 				res.end();
 				return;
 			}
@@ -334,7 +313,7 @@ app.use('/search', (req, res) => {
     });
 });
 
-app.use('/allClasses', (req, res) => { //broken
+app.use('/allClasses', (req, res) => {  //broken
 	Course.find( {}, (err, courses) => {
 		if (err) {
 		    res.type('html').status(200);
@@ -485,7 +464,7 @@ app.use('/updateCourse', (req, res) => { //.../updateCourse?name=chem%20101&desc
 		}
 			  
 	var action = {department: newDept, level: newLevel, domain: newDomain, description: newDescription, crossList: newCross};
-				Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
+		Course.findOneAndUpdate(filter, action, (err, updatedCourse) => {
         if (err) {
             console.log(err);
         }
@@ -1114,31 +1093,31 @@ app.use('/createClass', (req, res) => {
 
 
 
-app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
+// app.use('/crossListClasses', (req, res) => { //crossListClasses?/courseID=34&courseID=244
 
-	if(!req.query.courseID) {
-		res.write('No classes to be crosslisted');
-	}
-	else {
-	var { courseId1, courseId2 } = req.query.courseID; //store queries as array
+// 	if(!req.query.courseID) {
+// 		res.write('No classes to be crosslisted');
+// 	}
+// 	else {
+// 	var { courseId1, courseId2 } = req.query.courseID; //store queries as array
 
-	// Find the Class objects with the given courseIds
-	var class1 = Class.findOne({ courseID: courseId1 }).exec();
-	var class2 = Class.findOne({ courseID: courseId2 }).exec();
+// 	// Find the Class objects with the given courseIds
+// 	var class1 = Class.findOne({ courseID: courseId1 }).exec();
+// 	var class2 = Class.findOne({ courseID: courseId2 }).exec();
 
-	// If either of the classes does not exist, return an error
-	if (!class1 || !class2) {
-		res.send(err);
-	    res.write('One or both classes not found');
-	}
+// 	// If either of the classes does not exist, return an error
+// 	if (!class1 || !class2) {
+// 		res.send(err);
+// 	    res.write('One or both classes not found');
+// 	}
 
-	// crosslist the id query fields of the classes
-	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
+// 	// crosslist the id query fields of the classes
+// 	var crosslistedClass = {courseId: `${class1.courseId}-${class2.courseId}`};
 
-	// return crosslisted fields
-	return res.json(crosslistedClass);
-	}
-  });
+// 	// return crosslisted fields
+// 	return res.json(crosslistedClass);
+// 	}
+//   });
 
 
 
